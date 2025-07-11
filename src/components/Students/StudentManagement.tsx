@@ -26,8 +26,8 @@ export const StudentManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedClass, setSelectedClass] = useState<string>('');
-  const [selectedSection, setSelectedSection] = useState<string>('');
+  const [selectedClass, setSelectedClass] = useState<string>('all');
+  const [selectedSection, setSelectedSection] = useState<string>('all');
 
   const { 
     students, 
@@ -73,8 +73,8 @@ export const StudentManagement = () => {
   const filteredStudents = sampleStudents.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesClass = !selectedClass || student.class === selectedClass;
-    const matchesSection = !selectedSection || student.section === selectedSection;
+    const matchesClass = selectedClass === 'all' || student.class === selectedClass;
+    const matchesSection = selectedSection === 'all' || student.section === selectedSection;
     
     return matchesSearch && matchesClass && matchesSection;
   });
@@ -144,7 +144,7 @@ export const StudentManagement = () => {
                 <SelectValue placeholder="Class" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Classes</SelectItem>
+                <SelectItem value="all">All Classes</SelectItem>
                 {classes.map(cls => (
                   <SelectItem key={cls} value={cls}>{cls}</SelectItem>
                 ))}
@@ -155,7 +155,7 @@ export const StudentManagement = () => {
                 <SelectValue placeholder="Section" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Sections</SelectItem>
+                <SelectItem value="all">All Sections</SelectItem>
                 {sections.map(section => (
                   <SelectItem key={section} value={section}>{section}</SelectItem>
                 ))}

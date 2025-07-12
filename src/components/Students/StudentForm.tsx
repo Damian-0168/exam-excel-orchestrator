@@ -12,9 +12,10 @@ interface StudentFormProps {
   student?: Student | null;
   onSubmit: (student: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>) => void;
   onCancel: () => void;
+  isLoading?: boolean;
 }
 
-export const StudentForm = ({ student, onSubmit, onCancel }: StudentFormProps) => {
+export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: StudentFormProps) => {
   const [formData, setFormData] = useState({
     name: student?.name || '',
     email: student?.email || '',
@@ -53,7 +54,7 @@ export const StudentForm = ({ student, onSubmit, onCancel }: StudentFormProps) =
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
+    if (validateForm() && !isLoading) {
       onSubmit(formData);
     }
   };
@@ -72,7 +73,7 @@ export const StudentForm = ({ student, onSubmit, onCancel }: StudentFormProps) =
           <CardTitle>
             {student ? 'Edit Student' : 'Add New Student'}
           </CardTitle>
-          <Button variant="ghost" size="sm" onClick={onCancel}>
+          <Button variant="ghost" size="sm" onClick={onCancel} disabled={isLoading}>
             <X className="w-4 h-4" />
           </Button>
         </CardHeader>
@@ -90,6 +91,7 @@ export const StudentForm = ({ student, onSubmit, onCancel }: StudentFormProps) =
                     value={formData.name}
                     onChange={(e) => handleChange('name', e.target.value)}
                     className={errors.name ? 'border-red-500' : ''}
+                    disabled={isLoading}
                   />
                   {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
                 </div>
@@ -102,6 +104,7 @@ export const StudentForm = ({ student, onSubmit, onCancel }: StudentFormProps) =
                     value={formData.email}
                     onChange={(e) => handleChange('email', e.target.value)}
                     className={errors.email ? 'border-red-500' : ''}
+                    disabled={isLoading}
                   />
                   {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
                 </div>
@@ -113,6 +116,7 @@ export const StudentForm = ({ student, onSubmit, onCancel }: StudentFormProps) =
                     value={formData.rollNumber}
                     onChange={(e) => handleChange('rollNumber', e.target.value)}
                     className={errors.rollNumber ? 'border-red-500' : ''}
+                    disabled={isLoading}
                   />
                   {errors.rollNumber && <p className="text-sm text-red-500 mt-1">{errors.rollNumber}</p>}
                 </div>
@@ -125,6 +129,7 @@ export const StudentForm = ({ student, onSubmit, onCancel }: StudentFormProps) =
                     value={formData.dateOfBirth}
                     onChange={(e) => handleChange('dateOfBirth', e.target.value)}
                     className={errors.dateOfBirth ? 'border-red-500' : ''}
+                    disabled={isLoading}
                   />
                   {errors.dateOfBirth && <p className="text-sm text-red-500 mt-1">{errors.dateOfBirth}</p>}
                 </div>
@@ -138,7 +143,11 @@ export const StudentForm = ({ student, onSubmit, onCancel }: StudentFormProps) =
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>Class *</Label>
-                  <Select value={formData.class} onValueChange={(value) => handleChange('class', value)}>
+                  <Select 
+                    value={formData.class} 
+                    onValueChange={(value) => handleChange('class', value)}
+                    disabled={isLoading}
+                  >
                     <SelectTrigger className={errors.class ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Select class" />
                     </SelectTrigger>
@@ -153,7 +162,11 @@ export const StudentForm = ({ student, onSubmit, onCancel }: StudentFormProps) =
 
                 <div>
                   <Label>Section *</Label>
-                  <Select value={formData.section} onValueChange={(value) => handleChange('section', value)}>
+                  <Select 
+                    value={formData.section} 
+                    onValueChange={(value) => handleChange('section', value)}
+                    disabled={isLoading}
+                  >
                     <SelectTrigger className={errors.section ? 'border-red-500' : ''}>
                       <SelectValue placeholder="Select section" />
                     </SelectTrigger>
@@ -180,6 +193,7 @@ export const StudentForm = ({ student, onSubmit, onCancel }: StudentFormProps) =
                     value={formData.guardian}
                     onChange={(e) => handleChange('guardian', e.target.value)}
                     className={errors.guardian ? 'border-red-500' : ''}
+                    disabled={isLoading}
                   />
                   {errors.guardian && <p className="text-sm text-red-500 mt-1">{errors.guardian}</p>}
                 </div>
@@ -191,6 +205,7 @@ export const StudentForm = ({ student, onSubmit, onCancel }: StudentFormProps) =
                     value={formData.guardianContact}
                     onChange={(e) => handleChange('guardianContact', e.target.value)}
                     className={errors.guardianContact ? 'border-red-500' : ''}
+                    disabled={isLoading}
                   />
                   {errors.guardianContact && <p className="text-sm text-red-500 mt-1">{errors.guardianContact}</p>}
                 </div>
@@ -199,11 +214,22 @@ export const StudentForm = ({ student, onSubmit, onCancel }: StudentFormProps) =
 
             {/* Form Actions */}
             <div className="flex justify-end space-x-4 pt-6 border-t">
-              <Button type="button" variant="outline" onClick={onCancel}>
+              <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-educational-blue hover:bg-educational-blue/90">
-                {student ? 'Update Student' : 'Add Student'}
+              <Button 
+                type="submit" 
+                className="bg-educational-blue hover:bg-educational-blue/90"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    {student ? 'Updating...' : 'Creating...'}
+                  </>
+                ) : (
+                  student ? 'Update Student' : 'Add Student'
+                )}
               </Button>
             </div>
           </form>

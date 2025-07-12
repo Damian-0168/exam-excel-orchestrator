@@ -18,9 +18,10 @@ import {
   SelectTrigger,
   SelectValue 
 } from '@/components/ui/select';
-import { useExamStore } from '@/store/examStore';
 import { StudentForm } from './StudentForm';
 import { Student } from '@/types';
+import { useStudents, useCreateStudent, useUpdateStudent, useDeleteStudent } from '@/hooks/useStudents';
+import { useToast } from '@/hooks/use-toast';
 
 export const StudentManagement = () => {
   const [showForm, setShowForm] = useState(false);
@@ -29,48 +30,16 @@ export const StudentManagement = () => {
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [selectedSection, setSelectedSection] = useState<string>('all');
 
-  const { 
-    students, 
-    addStudent, 
-    updateStudent, 
-    deleteStudent,
-    setStudentFilter 
-  } = useExamStore();
-
-  // Sample data if no students exist
-  const sampleStudents: Student[] = students.length === 0 ? [
-    {
-      id: '1',
-      name: 'Alice Johnson',
-      email: 'alice@example.com',
-      rollNumber: 'ST001',
-      class: '10A',
-      section: 'A',
-      dateOfBirth: '2008-05-15',
-      guardian: 'Robert Johnson',
-      guardianContact: '+1234567890',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    },
-    {
-      id: '2',
-      name: 'Bob Smith',
-      email: 'bob@example.com',
-      rollNumber: 'ST002',
-      class: '10A', 
-      section: 'A',
-      dateOfBirth: '2008-08-22',
-      guardian: 'Mary Smith',
-      guardianContact: '+1234567891',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ] : students;
+  const { toast } = useToast();
+  const { data: students = [], isLoading, error } = useStudents();
+  const createStudentMutation = useCreateStudent();
+  const updateStudentMutation = useUpdateStudent();
+  const deleteStudentMutation = useDeleteStudent();
 
   const classes = ['10A', '10B', '11A', '11B', '12A', '12B'];
   const sections = ['A', 'B', 'C'];
 
-  const filteredStudents = sampleStudents.filter(student => {
+  const filteredStudents = students.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesClass = selectedClass === 'all' || student.class === selectedClass;
@@ -79,31 +48,64 @@ export const StudentManagement = () => {
     return matchesSearch && matchesClass && matchesSection;
   });
 
-  const handleCreateStudent = (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newStudent: Student = {
-      ...studentData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    addStudent(newStudent);
-    setShowForm(false);
-  };
-
-  const handleUpdateStudent = (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>) => {
-    if (editingStudent) {
-      updateStudent(editingStudent.id, {
-        ...studentData,
-        updatedAt: new Date().toISOString()
-      });
-      setEditingStudent(null);
+  const handleCreateStudent = async (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      await createStudentMutation.mutateAsync(studentData);
       setShowForm(false);
+      toast({
+        title: "Success",
+        description: "Student created successfully",
+      });
+    } catch (error) {
+      console.error('Failed to create student:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create student. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleDeleteStudent = (id: string) => {
-    if (confirm('Are you sure you want to delete this student?')) {
-      deleteStudent(id);
+  const handleUpdateStudent = async (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!editingStudent) return;
+    
+    try {
+      await updateStudentMutation.mutateAsync({
+        id: editingStudent.id,
+        updates: studentData
+      });
+      setEditingStudent(null);
+      setShowForm(false);
+      toast({
+        title: "Success",
+        description: "Student updated successfully",
+      });
+    } catch (error) {
+      console.error('Failed to update student:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update student. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteStudent = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this student?')) return;
+    
+    try {
+      await deleteStudentMutation.mutateAsync(id);
+      toast({
+        title: "Success",
+        description: "Student deleted successfully",
+      });
+    } catch (error) {
+      console.error('Failed to delete student:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete student. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -111,6 +113,17 @@ export const StudentManagement = () => {
     setEditingStudent(student);
     setShowForm(true);
   };
+
+  if (error) {
+    return (
+      <div className="p-8 text-center">
+        <div className="text-red-600">
+          <h3 className="text-lg font-medium mb-2">Error loading students</h3>
+          <p>Please check your database connection and try again.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -120,7 +133,11 @@ export const StudentManagement = () => {
           <h1 className="text-3xl font-bold text-gray-900">Student Management</h1>
           <p className="text-gray-600">Manage your student records and information</p>
         </div>
-        <Button onClick={() => setShowForm(true)} className="bg-educational-blue hover:bg-educational-blue/90">
+        <Button 
+          onClick={() => setShowForm(true)} 
+          className="bg-educational-blue hover:bg-educational-blue/90"
+          disabled={createStudentMutation.isPending}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Add Student
         </Button>
@@ -165,63 +182,78 @@ export const StudentManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Students Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredStudents.map((student) => (
-          <Card key={student.id} className="hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-lg">{student.name}</CardTitle>
-                  <p className="text-sm text-gray-600">{student.rollNumber}</p>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleEdit(student)}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Eye className="w-4 h-4 mr-2" />
-                      View Details
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => handleDeleteStudent(student.id)}
-                      className="text-red-600"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Class:</span>
-                  <Badge variant="secondary">{student.class}-{student.section}</Badge>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Guardian:</span>
-                  <span className="text-sm font-medium">{student.guardian}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Contact:</span>
-                  <span className="text-sm">{student.guardianContact}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Loading State */}
+      {isLoading && (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <div className="text-gray-500">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-educational-blue mx-auto mb-4"></div>
+              <p>Loading students...</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-      {filteredStudents.length === 0 && (
+      {/* Students Grid */}
+      {!isLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredStudents.map((student) => (
+            <Card key={student.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-lg">{student.name}</CardTitle>
+                    <p className="text-sm text-gray-600">{student.rollNumber}</p>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleEdit(student)}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDeleteStudent(student.id)}
+                        className="text-red-600"
+                        disabled={deleteStudentMutation.isPending}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Class:</span>
+                    <Badge variant="secondary">{student.class}-{student.section}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Guardian:</span>
+                    <span className="text-sm font-medium">{student.guardian || 'N/A'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Contact:</span>
+                    <span className="text-sm">{student.guardianContact || 'N/A'}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {!isLoading && filteredStudents.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
             <div className="text-gray-500">
@@ -242,6 +274,7 @@ export const StudentManagement = () => {
             setShowForm(false);
             setEditingStudent(null);
           }}
+          isLoading={createStudentMutation.isPending || updateStudentMutation.isPending}
         />
       )}
     </div>

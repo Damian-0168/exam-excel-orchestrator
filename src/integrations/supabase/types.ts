@@ -14,7 +14,307 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      exam_subjects: {
+        Row: {
+          exam_id: string
+          id: string
+          max_marks: number
+          subject_id: string
+        }
+        Insert: {
+          exam_id: string
+          id?: string
+          max_marks?: number
+          subject_id: string
+        }
+        Update: {
+          exam_id?: string
+          id?: string
+          max_marks?: number
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_subjects_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_subjects_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exams: {
+        Row: {
+          academic_year: string
+          class: string
+          created_at: string
+          created_by: string | null
+          end_date: string
+          id: string
+          name: string
+          section: string
+          start_date: string
+          status: Database["public"]["Enums"]["exam_status"]
+          term: Database["public"]["Enums"]["term_type"]
+          type: Database["public"]["Enums"]["exam_type"]
+        }
+        Insert: {
+          academic_year: string
+          class: string
+          created_at?: string
+          created_by?: string | null
+          end_date: string
+          id?: string
+          name: string
+          section: string
+          start_date: string
+          status?: Database["public"]["Enums"]["exam_status"]
+          term: Database["public"]["Enums"]["term_type"]
+          type: Database["public"]["Enums"]["exam_type"]
+        }
+        Update: {
+          academic_year?: string
+          class?: string
+          created_at?: string
+          created_by?: string | null
+          end_date?: string
+          id?: string
+          name?: string
+          section?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["exam_status"]
+          term?: Database["public"]["Enums"]["term_type"]
+          type?: Database["public"]["Enums"]["exam_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exams_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scores: {
+        Row: {
+          entered_at: string
+          exam_id: string
+          gpa: number | null
+          grade: string | null
+          id: string
+          marks_obtained: number
+          max_marks: number
+          remarks: string | null
+          student_id: string
+          subject_id: string
+          teacher_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          entered_at?: string
+          exam_id: string
+          gpa?: number | null
+          grade?: string | null
+          id?: string
+          marks_obtained: number
+          max_marks?: number
+          remarks?: string | null
+          student_id: string
+          subject_id: string
+          teacher_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          entered_at?: string
+          exam_id?: string
+          gpa?: number | null
+          grade?: string | null
+          id?: string
+          marks_obtained?: number
+          max_marks?: number
+          remarks?: string | null
+          student_id?: string
+          subject_id?: string
+          teacher_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scores_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scores_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scores_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scores_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          class: string
+          created_at: string
+          date_of_birth: string | null
+          email: string | null
+          guardian: string | null
+          guardian_contact: string | null
+          id: string
+          name: string
+          roll_number: string
+          section: string
+          updated_at: string
+        }
+        Insert: {
+          class: string
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          guardian?: string | null
+          guardian_contact?: string | null
+          id?: string
+          name: string
+          roll_number: string
+          section: string
+          updated_at?: string
+        }
+        Update: {
+          class?: string
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          guardian?: string | null
+          guardian_contact?: string | null
+          id?: string
+          name?: string
+          roll_number?: string
+          section?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      subjects: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          max_marks: number
+          name: string
+          passing_marks: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_marks?: number
+          name: string
+          passing_marks?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_marks?: number
+          name?: string
+          passing_marks?: number
+        }
+        Relationships: []
+      }
+      teacher_subjects: {
+        Row: {
+          classes: string[]
+          id: string
+          subject_id: string
+          teacher_id: string
+        }
+        Insert: {
+          classes?: string[]
+          id?: string
+          subject_id: string
+          teacher_id: string
+        }
+        Update: {
+          classes?: string[]
+          id?: string
+          subject_id?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_subjects_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_subjects_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teachers: {
+        Row: {
+          created_at: string
+          department: string | null
+          email: string
+          id: string
+          join_date: string
+          name: string
+          role: Database["public"]["Enums"]["teacher_role"]
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          email: string
+          id?: string
+          join_date?: string
+          name: string
+          role?: Database["public"]["Enums"]["teacher_role"]
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          email?: string
+          id?: string
+          join_date?: string
+          name?: string
+          role?: Database["public"]["Enums"]["teacher_role"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +323,10 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      exam_status: "upcoming" | "ongoing" | "completed" | "cancelled"
+      exam_type: "midterm" | "final" | "unit-test" | "assignment" | "practical"
+      teacher_role: "teacher" | "head-teacher" | "admin"
+      term_type: "first" | "second" | "third"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +453,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      exam_status: ["upcoming", "ongoing", "completed", "cancelled"],
+      exam_type: ["midterm", "final", "unit-test", "assignment", "practical"],
+      teacher_role: ["teacher", "head-teacher", "admin"],
+      term_type: ["first", "second", "third"],
+    },
   },
 } as const

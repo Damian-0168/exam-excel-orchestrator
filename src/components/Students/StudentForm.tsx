@@ -15,11 +15,16 @@ interface StudentFormProps {
   isLoading?: boolean;
 }
 
+const generateRollNumber = () => {
+  const timestamp = Date.now().toString();
+  return `STU${timestamp.slice(-8)}`;
+};
+
 export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: StudentFormProps) => {
   const [formData, setFormData] = useState({
     name: student?.name || '',
     email: student?.email || '',
-    rollNumber: student?.rollNumber || '',
+    rollNumber: student?.rollNumber || (!student ? generateRollNumber() : ''),
     class: student?.class || '',
     section: student?.section || '',
     dateOfBirth: student?.dateOfBirth || '',
@@ -29,8 +34,8 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const classes = ['10A', '10B', '11A', '11B', '12A', '12B'];
-  const sections = ['A', 'B', 'C'];
+  const classes = ['Form 1', 'Form 2', 'Form 3', 'Form 4'];
+  const sections = ['A', 'B', 'C', 'D'];
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};

@@ -36,8 +36,6 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
     if (!formData.rollNumber.trim()) newErrors.rollNumber = 'Roll number is required';
     if (!formData.class) newErrors.class = 'Class is required';
     if (!formData.section) newErrors.section = 'Section is required';
@@ -55,7 +53,7 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm() && !isLoading) {
-      onSubmit(formData);
+      onSubmit({ ...formData, email: '' });
     }
   };
 
@@ -94,19 +92,6 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
                     disabled={isLoading}
                   />
                   {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
-                </div>
-
-                <div>
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                    className={errors.email ? 'border-red-500' : ''}
-                    disabled={isLoading}
-                  />
-                  {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
                 </div>
 
                 <div>

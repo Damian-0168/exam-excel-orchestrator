@@ -98,7 +98,7 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
                   <Label htmlFor="rollNumber">Roll Number *</Label>
                   <Input
                     id="rollNumber"
-                    placeholder="e.g., STU2024001"
+                    placeholder="e.g., STOO1"
                     value={formData.rollNumber}
                     onChange={(e) => handleChange('rollNumber', e.target.value)}
                     className={errors.rollNumber ? 'border-red-500' : ''}

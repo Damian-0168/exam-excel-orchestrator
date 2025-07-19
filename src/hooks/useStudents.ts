@@ -55,7 +55,7 @@ export const useStudents = () => {
       const { data, error } = await supabase
         .from('students')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('name'); // Sort alphabetically
 
       if (error) {
         console.error('Error fetching students:', error);

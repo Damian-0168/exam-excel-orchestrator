@@ -187,7 +187,7 @@ export type Database = {
           guardian_contact: string | null
           id: string
           name: string
-          roll_number: string
+          roll_number: string | null
           section: string
           updated_at: string
         }
@@ -200,7 +200,7 @@ export type Database = {
           guardian_contact?: string | null
           id?: string
           name: string
-          roll_number: string
+          roll_number?: string | null
           section: string
           updated_at?: string
         }
@@ -213,7 +213,7 @@ export type Database = {
           guardian_contact?: string | null
           id?: string
           name?: string
-          roll_number?: string
+          roll_number?: string | null
           section?: string
           updated_at?: string
         }
@@ -248,6 +248,41 @@ export type Database = {
           passing_marks?: number
         }
         Relationships: []
+      }
+      teacher_auth: {
+        Row: {
+          created_at: string
+          id: string
+          password_hash: string
+          teacher_id: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          password_hash: string
+          teacher_id: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          password_hash?: string
+          teacher_id?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_auth_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       teacher_subjects: {
         Row: {
@@ -294,6 +329,7 @@ export type Database = {
           join_date: string
           name: string
           role: Database["public"]["Enums"]["teacher_role"]
+          username: string | null
         }
         Insert: {
           created_at?: string
@@ -303,6 +339,7 @@ export type Database = {
           join_date?: string
           name: string
           role?: Database["public"]["Enums"]["teacher_role"]
+          username?: string | null
         }
         Update: {
           created_at?: string
@@ -312,6 +349,7 @@ export type Database = {
           join_date?: string
           name?: string
           role?: Database["public"]["Enums"]["teacher_role"]
+          username?: string | null
         }
         Relationships: []
       }

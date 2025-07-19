@@ -36,13 +36,11 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.rollNumber.trim()) newErrors.rollNumber = 'Roll number is required';
     if (!formData.class) newErrors.class = 'Class is required';
     if (!formData.section) newErrors.section = 'Section is required';
-    if (!formData.dateOfBirth) newErrors.dateOfBirth = 'Date of birth is required';
-    if (!formData.guardian.trim()) newErrors.guardian = 'Guardian name is required';
-    if (!formData.guardianContact.trim()) newErrors.guardianContact = 'Guardian contact is required';
-    else if (!/^\+?[\d\s-()]+$/.test(formData.guardianContact)) {
+    
+    // Roll number, date of birth, guardian, and guardian contact are now optional
+    if (formData.guardianContact && !/^\+?[\d\s-()]+$/.test(formData.guardianContact)) {
       newErrors.guardianContact = 'Invalid contact number';
     }
 
@@ -95,10 +93,10 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
                 </div>
 
                 <div>
-                  <Label htmlFor="rollNumber">Roll Number *</Label>
+                  <Label htmlFor="rollNumber">Roll Number</Label>
                   <Input
                     id="rollNumber"
-                    placeholder="e.g., STOO1"
+                    placeholder="e.g., STOO1 (optional)"
                     value={formData.rollNumber}
                     onChange={(e) => handleChange('rollNumber', e.target.value)}
                     className={errors.rollNumber ? 'border-red-500' : ''}
@@ -108,7 +106,7 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
                 </div>
 
                 <div>
-                  <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
                   <Input
                     id="dateOfBirth"
                     type="date"
@@ -173,9 +171,10 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="guardian">Guardian Name *</Label>
+                  <Label htmlFor="guardian">Guardian Name</Label>
                   <Input
                     id="guardian"
+                    placeholder="Optional"
                     value={formData.guardian}
                     onChange={(e) => handleChange('guardian', e.target.value)}
                     className={errors.guardian ? 'border-red-500' : ''}
@@ -185,9 +184,10 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
                 </div>
 
                 <div>
-                  <Label htmlFor="guardianContact">Guardian Contact *</Label>
+                  <Label htmlFor="guardianContact">Guardian Contact</Label>
                   <Input
                     id="guardianContact"
+                    placeholder="Optional"
                     value={formData.guardianContact}
                     onChange={(e) => handleChange('guardianContact', e.target.value)}
                     className={errors.guardianContact ? 'border-red-500' : ''}

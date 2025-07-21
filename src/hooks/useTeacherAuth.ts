@@ -80,18 +80,25 @@ export const useTeacherAuth = () => {
       
       const passwordHash = btoa(password);
       
-      // Get teacher auth
+      // Get teacher auth with better error handling
       const { data: authData, error: authError } = await supabase
         .from('teacher_auth')
         .select(`
           teacher_id,
-          teachers!inner(*)
+          teachers!inner(id, name, username, email)
         `)
         .eq('username', username)
         .eq('password_hash', passwordHash)
-        .single();
+        .maybeSingle();
 
-      if (authError) throw new Error('Invalid credentials');
+      if (authError) {
+        console.error('Auth query error:', authError);
+        throw new Error('Database error occurred');
+      }
+
+      if (!authData) {
+        throw new Error('Invalid username or password');
+      }
 
       // Get teacher subjects
       const { data: subjects, error: subjectsError } = await supabase
@@ -101,13 +108,16 @@ export const useTeacherAuth = () => {
         `)
         .eq('teacher_id', authData.teacher_id);
 
-      if (subjectsError) throw subjectsError;
+      if (subjectsError) {
+        console.error('Subjects query error:', subjectsError);
+        // Don't fail login if subjects can't be loaded
+      }
 
       const sessionData: TeacherSession = {
         id: authData.teacher_id,
         name: authData.teachers.name,
         username: authData.teachers.username,
-        subjects: subjects.map(s => s.subjects.id)
+        subjects: subjects?.map(s => s.subjects.id) || []
       };
 
       setSession(sessionData);
@@ -115,6 +125,7 @@ export const useTeacherAuth = () => {
 
       return { success: true };
     } catch (error: any) {
+      console.error('Sign in error:', error);
       return { success: false, error: error.message };
     } finally {
       setLoading(false);

@@ -25,8 +25,12 @@ export const useTeacherAuth = () => {
     try {
       setLoading(true);
       
-      // Hash password (simple implementation - in production use bcrypt)
-      const passwordHash = btoa(password); // Base64 encoding for demo
+      // Hash password using SHA-256
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const passwordHash = btoa(String.fromCharCode.apply(null, hashArray));
       
       // Create teacher
       const { data: teacher, error: teacherError } = await supabase
@@ -78,7 +82,12 @@ export const useTeacherAuth = () => {
     try {
       setLoading(true);
       
-      const passwordHash = btoa(password);
+      // Hash password using SHA-256
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const passwordHash = btoa(String.fromCharCode.apply(null, hashArray));
       
       // Get teacher auth
       const { data: authData, error: authError } = await supabase

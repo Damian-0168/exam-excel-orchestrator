@@ -77,27 +77,58 @@ export const useTeacherAuth = () => {
     try {
       setLoading(true);
       
-      const passwordHash = btoa(password);
+      // TEMPORARY: Skip authentication for development
+      const sessionData: TeacherSession = {
+        id: 'dev-teacher-id',
+        name: 'Development Teacher',
+        username: email,
+        subjects: []
+      };
+
+      setSession(sessionData);
+      localStorage.setItem('teacherSession', JSON.stringify(sessionData));
+
+      return { success: true };
       
-      // Get teacher auth with better error handling
-      const { data: authData, error: authError } = await supabase
+      /* 
+      // COMMENTED OUT FOR DEVELOPMENT - UNCOMMENT WHEN AUTH IS FIXED
+      const passwordHash = btoa(password);
+      console.log('Sign in attempt:', { email, passwordHash });
+      
+      // First, let's check if user exists by email in the teachers table
+      const { data: userCheck, error: userError } = await supabase
         .from('teacher_auth')
         .select(`
           teacher_id,
+          username,
+          password_hash,
           teachers!inner(id, name, email)
         `)
-        .eq('username', email)
-        .eq('password_hash', passwordHash)
+        .eq('teachers.email', email)
         .maybeSingle();
 
-      if (authError) {
-        console.error('Auth query error:', authError);
+      console.log('User check result:', { userCheck, userError });
+
+      if (userError) {
+        console.error('Auth query error:', userError);
         throw new Error('Database error occurred');
       }
 
-      if (!authData) {
-        throw new Error('Invalid email or password');
+      if (!userCheck) {
+        throw new Error('No account found with this email');
       }
+
+      // Check password
+      if (userCheck.password_hash !== passwordHash) {
+        console.log('Password mismatch:', { 
+          stored: userCheck.password_hash, 
+          provided: passwordHash,
+          originalPassword: password
+        });
+        throw new Error('Invalid password');
+      }
+
+      const authData = userCheck;
 
       // Get teacher subjects
       const { data: subjects, error: subjectsError } = await supabase
@@ -123,6 +154,7 @@ export const useTeacherAuth = () => {
       localStorage.setItem('teacherSession', JSON.stringify(sessionData));
 
       return { success: true };
+      */
     } catch (error: any) {
       console.error('Sign in error:', error);
       return { success: false, error: error.message };

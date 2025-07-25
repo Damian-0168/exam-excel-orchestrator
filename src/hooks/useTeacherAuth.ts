@@ -21,7 +21,7 @@ export const useTeacherAuth = () => {
     setLoading(false);
   }, []);
 
-  const signUp = async (username: string, password: string, name: string, email: string, subjectIds: string[]) => {
+  const signUp = async (email: string, password: string, name: string, emailParam: string, subjectIds: string[]) => {
     try {
       setLoading(true);
       
@@ -34,7 +34,6 @@ export const useTeacherAuth = () => {
         .insert({
           name,
           email,
-          username,
           role: 'teacher'
         })
         .select()
@@ -47,7 +46,7 @@ export const useTeacherAuth = () => {
         .from('teacher_auth')
         .insert({
           teacher_id: teacher.id,
-          username,
+          username: email, // Use email as username for authentication
           password_hash: passwordHash
         });
 
@@ -74,7 +73,7 @@ export const useTeacherAuth = () => {
     }
   };
 
-  const signIn = async (username: string, password: string) => {
+  const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
       
@@ -85,9 +84,9 @@ export const useTeacherAuth = () => {
         .from('teacher_auth')
         .select(`
           teacher_id,
-          teachers!inner(id, name, username, email)
+          teachers!inner(id, name, email)
         `)
-        .eq('username', username)
+        .eq('username', email)
         .eq('password_hash', passwordHash)
         .maybeSingle();
 
@@ -97,7 +96,7 @@ export const useTeacherAuth = () => {
       }
 
       if (!authData) {
-        throw new Error('Invalid username or password');
+        throw new Error('Invalid email or password');
       }
 
       // Get teacher subjects
@@ -116,7 +115,7 @@ export const useTeacherAuth = () => {
       const sessionData: TeacherSession = {
         id: authData.teacher_id,
         name: authData.teachers.name,
-        username: authData.teachers.username,
+        username: authData.teachers.email,
         subjects: subjects?.map(s => s.subjects.id) || []
       };
 

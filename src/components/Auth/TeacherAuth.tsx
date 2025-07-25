@@ -14,13 +14,12 @@ export const TeacherAuth = () => {
   const [signUpData, setSignUpData] = useState({
     name: '',
     email: '',
-    username: '',
     password: '',
     confirmPassword: '',
     selectedSubjects: [] as string[]
   });
   const [signInData, setSignInData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [showSignInPassword, setShowSignInPassword] = useState(false);
@@ -62,7 +61,7 @@ export const TeacherAuth = () => {
     }
 
     const result = await signUp(
-      signUpData.username,
+      signUpData.email,
       signUpData.password,
       signUpData.name,
       signUpData.email,
@@ -78,7 +77,6 @@ export const TeacherAuth = () => {
       setSignUpData({
         name: '',
         email: '',
-        username: '',
         password: '',
         confirmPassword: '',
         selectedSubjects: []
@@ -95,7 +93,7 @@ export const TeacherAuth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const result = await signIn(signInData.username, signInData.password);
+    const result = await signIn(signInData.email, signInData.password);
 
     if (result.success) {
       toast({
@@ -137,12 +135,12 @@ export const TeacherAuth = () => {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-username">Username</Label>
+                  <Label htmlFor="signin-email">Email</Label>
                   <Input
-                    id="signin-username"
-                    type="text"
-                    value={signInData.username}
-                    onChange={(e) => setSignInData(prev => ({ ...prev, username: e.target.value }))}
+                    id="signin-email"
+                    type="email"
+                    value={signInData.email}
+                    onChange={(e) => setSignInData(prev => ({ ...prev, email: e.target.value }))}
                     required
                   />
                 </div>
@@ -197,16 +195,6 @@ export const TeacherAuth = () => {
                     type="email"
                     value={signUpData.email}
                     onChange={(e) => setSignUpData(prev => ({ ...prev, email: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-username">Username</Label>
-                  <Input
-                    id="signup-username"
-                    type="text"
-                    value={signUpData.username}
-                    onChange={(e) => setSignUpData(prev => ({ ...prev, username: e.target.value }))}
                     required
                   />
                 </div>

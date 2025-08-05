@@ -16,7 +16,7 @@ const transformDatabaseStudent = (dbStudent: DatabaseStudent): Student => ({
   rollNumber: dbStudent.roll_number || '',
   class: dbStudent.class,
   section: dbStudent.section,
-  dateOfBirth: dbStudent.date_of_birth || '',
+  registrationDate: dbStudent.registration_date || '',
   guardian: dbStudent.guardian || '',
   guardianContact: dbStudent.guardian_contact || '',
   createdAt: dbStudent.created_at,
@@ -30,7 +30,7 @@ const transformToInsert = (student: Omit<Student, 'id' | 'createdAt' | 'updatedA
   roll_number: student.rollNumber || null,
   class: student.class,
   section: student.section,
-  date_of_birth: student.dateOfBirth || null,
+  registration_date: student.registrationDate || null,
   guardian: student.guardian || null,
   guardian_contact: student.guardianContact || null
 });
@@ -42,7 +42,7 @@ const transformToUpdate = (student: Partial<Student>): DatabaseStudentUpdate => 
   ...(student.rollNumber && { roll_number: student.rollNumber }),
   ...(student.class && { class: student.class }),
   ...(student.section && { section: student.section }),
-  ...(student.dateOfBirth !== undefined && { date_of_birth: student.dateOfBirth || null }),
+  ...(student.registrationDate !== undefined && { registration_date: student.registrationDate || null }),
   ...(student.guardian !== undefined && { guardian: student.guardian || null }),
   ...(student.guardianContact !== undefined && { guardian_contact: student.guardianContact || null })
 });

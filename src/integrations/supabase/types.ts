@@ -181,12 +181,12 @@ export type Database = {
         Row: {
           class: string
           created_at: string
-          date_of_birth: string | null
           email: string | null
           guardian: string | null
           guardian_contact: string | null
           id: string
           name: string
+          registration_date: string | null
           roll_number: string | null
           section: string
           updated_at: string
@@ -194,12 +194,12 @@ export type Database = {
         Insert: {
           class: string
           created_at?: string
-          date_of_birth?: string | null
           email?: string | null
           guardian?: string | null
           guardian_contact?: string | null
           id?: string
           name: string
+          registration_date?: string | null
           roll_number?: string | null
           section: string
           updated_at?: string
@@ -207,12 +207,12 @@ export type Database = {
         Update: {
           class?: string
           created_at?: string
-          date_of_birth?: string | null
           email?: string | null
           guardian?: string | null
           guardian_contact?: string | null
           id?: string
           name?: string
+          registration_date?: string | null
           roll_number?: string | null
           section?: string
           updated_at?: string
@@ -347,6 +347,42 @@ export type Database = {
           join_date?: string
           name?: string
           role?: Database["public"]["Enums"]["teacher_role"]
+        }
+        Relationships: []
+      }
+      template_data: {
+        Row: {
+          created_at: string
+          description: string | null
+          filename: string
+          id: string
+          is_active: boolean
+          sample_data: Json
+          template_code: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          filename: string
+          id?: string
+          is_active?: boolean
+          sample_data: Json
+          template_code: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          filename?: string
+          id?: string
+          is_active?: boolean
+          sample_data?: Json
+          template_code?: string
+          type?: string
+          updated_at?: string
         }
         Relationships: []
       }

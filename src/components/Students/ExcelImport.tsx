@@ -5,10 +5,11 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { useStudentTemplate } from '@/hooks/useTemplateData';
 
 interface Student {
   name: string;
-  dateOfBirth?: string;
+  registrationDate?: string;
   class: string;
   section: string;
   rollNumber?: string;
@@ -24,37 +25,27 @@ interface ExcelImportProps {
 export const ExcelImport = ({ onImport, isLoading }: ExcelImportProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { data: templateData, isLoading: templateLoading } = useStudentTemplate();
 
   const downloadTemplate = () => {
-    const template = [
-      {
-        name: 'John Doe',
-        dateOfBirth: '2005-01-15',
-        class: 'Form 1',
-        section: 'A',
-        rollNumber: '001',
-        guardian: 'Jane Doe',
-        guardianContact: '+1234567890'
-      },
-      {
-        name: 'Mary Smith',
-        dateOfBirth: '2005-03-22',
-        class: 'Form 1',
-        section: 'B',
-        rollNumber: '002',
-        guardian: 'John Smith',
-        guardianContact: '+1234567891'
-      }
-    ];
+    if (!templateData || templateData.length === 0) {
+      toast({
+        title: "Template Unavailable",
+        description: "No template data found in the database",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    const worksheet = XLSX.utils.json_to_sheet(template);
+    const template = templateData[0];
+    const worksheet = XLSX.utils.json_to_sheet(template.sample_data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
-    XLSX.writeFile(workbook, 'student_template.xlsx');
+    XLSX.writeFile(workbook, template.filename);
     
     toast({
       title: "Template Downloaded",
-      description: "Excel template has been downloaded to your computer"
+      description: `${template.filename} has been downloaded to your computer`
     });
   };
 
@@ -70,7 +61,7 @@ export const ExcelImport = ({ onImport, isLoading }: ExcelImportProps) => {
 
       const students = jsonData.map((row: any) => ({
         name: row.name || '',
-        dateOfBirth: row.dateOfBirth || '',
+        registrationDate: row.registrationDate || '',
         class: row.class || '',
         section: row.section || '',
         rollNumber: row.rollNumber || '',
@@ -123,9 +114,10 @@ export const ExcelImport = ({ onImport, isLoading }: ExcelImportProps) => {
           variant="outline"
           onClick={downloadTemplate}
           className="flex items-center gap-2"
+          disabled={templateLoading || !templateData || templateData.length === 0}
         >
           <Download className="h-4 w-4" />
-          Download Template
+          {templateLoading ? 'Loading...' : 'Download Template'}
         </Button>
         
         <div className="flex items-center gap-2">

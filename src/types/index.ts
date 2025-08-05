@@ -7,7 +7,7 @@ export interface Student {
   rollNumber: string;
   class: string;
   section: string;
-  dateOfBirth: string;
+  registrationDate: string;
   guardian: string;
   guardianContact: string;
   createdAt: string;

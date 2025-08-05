@@ -22,7 +22,7 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
     rollNumber: student?.rollNumber || '',
     class: student?.class || '',
     section: student?.section || '',
-    dateOfBirth: student?.dateOfBirth || '',
+    registrationDate: student?.registrationDate || '',
     guardian: student?.guardian || '',
     guardianContact: student?.guardianContact || ''
   });
@@ -39,7 +39,7 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
     if (!formData.class) newErrors.class = 'Class is required';
     if (!formData.section) newErrors.section = 'Section is required';
     
-    // Roll number, date of birth, guardian, and guardian contact are now optional
+    // Roll number, registration date, guardian, and guardian contact are now optional
     if (formData.guardianContact && !/^\+?[\d\s-()]+$/.test(formData.guardianContact)) {
       newErrors.guardianContact = 'Invalid contact number';
     }
@@ -106,16 +106,16 @@ export const StudentForm = ({ student, onSubmit, onCancel, isLoading = false }: 
                 </div>
 
                 <div>
-                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                  <Label htmlFor="registrationDate">Registration Date</Label>
                   <Input
-                    id="dateOfBirth"
+                    id="registrationDate"
                     type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) => handleChange('dateOfBirth', e.target.value)}
-                    className={errors.dateOfBirth ? 'border-red-500' : ''}
+                    value={formData.registrationDate}
+                    onChange={(e) => handleChange('registrationDate', e.target.value)}
+                    className={errors.registrationDate ? 'border-red-500' : ''}
                     disabled={isLoading}
                   />
-                  {errors.dateOfBirth && <p className="text-sm text-red-500 mt-1">{errors.dateOfBirth}</p>}
+                  {errors.registrationDate && <p className="text-sm text-red-500 mt-1">{errors.registrationDate}</p>}
                 </div>
               </div>
             </div>

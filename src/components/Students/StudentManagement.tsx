@@ -73,7 +73,7 @@ export const StudentManagement = () => {
       console.error('Failed to create student:', error);
       toast({
         title: "Error",
-        description: "Failed to create student. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to create student. Please try again.",
         variant: "destructive",
       });
     }
@@ -93,7 +93,7 @@ export const StudentManagement = () => {
       console.error('Failed to import students:', error);
       toast({
         title: "Error",
-        description: "Failed to import students. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to import students. Please try again.",
         variant: "destructive",
       });
     }
@@ -117,7 +117,7 @@ export const StudentManagement = () => {
       console.error('Failed to update student:', error);
       toast({
         title: "Error",
-        description: "Failed to update student. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to update student. Please try again.",
         variant: "destructive",
       });
     }
@@ -134,7 +134,7 @@ export const StudentManagement = () => {
       console.error('Failed to delete student:', error);
       toast({
         title: "Error",
-        description: "Failed to delete student. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to delete student. Please try again.",
         variant: "destructive",
       });
     }

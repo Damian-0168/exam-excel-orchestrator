@@ -100,9 +100,10 @@ export const ExcelImport = ({ onImport, isLoading }: ExcelImportProps) => {
       }
 
     } catch (error) {
+      console.error('Excel import error:', error);
       toast({
         title: "Import Error",
-        description: "Failed to read the Excel file. Please check the format.",
+        description: error instanceof Error ? error.message : "Failed to read the Excel file. Please check the format.",
         variant: "destructive"
       });
     }

@@ -13,7 +13,7 @@ const transformDatabaseStudent = (dbStudent: DatabaseStudent): Student => ({
   id: dbStudent.id,
   name: dbStudent.name,
   email: dbStudent.email || '',
-  rollNumber: dbStudent.roll_number,
+  rollNumber: dbStudent.roll_number || '',
   class: dbStudent.class,
   section: dbStudent.section,
   dateOfBirth: dbStudent.date_of_birth || '',
@@ -27,7 +27,7 @@ const transformDatabaseStudent = (dbStudent: DatabaseStudent): Student => ({
 const transformToInsert = (student: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>): DatabaseStudentInsert => ({
   name: student.name,
   email: student.email || null,
-  roll_number: student.rollNumber,
+  roll_number: student.rollNumber || null,
   class: student.class,
   section: student.section,
   date_of_birth: student.dateOfBirth || null,

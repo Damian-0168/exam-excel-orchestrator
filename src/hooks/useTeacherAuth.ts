@@ -85,8 +85,10 @@ export const useTeacherAuth = () => {
         subjects: []
       };
 
-      // Update both localStorage and state
+      // Update localStorage first
       localStorage.setItem('teacherSession', JSON.stringify(sessionData));
+      
+      // Then update state to trigger re-render
       setSession(sessionData);
 
       return { success: true };

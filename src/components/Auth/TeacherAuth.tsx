@@ -64,7 +64,6 @@ export const TeacherAuth = () => {
       signUpData.email,
       signUpData.password,
       signUpData.name,
-      signUpData.email,
       signUpData.selectedSubjects
     );
 

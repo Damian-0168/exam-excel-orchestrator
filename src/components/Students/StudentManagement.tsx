@@ -16,6 +16,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +56,7 @@ export const StudentManagement = () => {
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [selectedSection, setSelectedSection] = useState<string>('all');
   const [showExcelImport, setShowExcelImport] = useState(false);
+  const [viewingStudent, setViewingStudent] = useState<Student | null>(null);
 
   const { toast } = useToast();
   const { data: students = [], isLoading, error } = useStudents();
@@ -145,6 +160,10 @@ export const StudentManagement = () => {
     setShowForm(true);
   };
 
+  const handleView = (student: Student) => {
+    setViewingStudent(student);
+  };
+
   if (error) {
     return (
       <div className="p-8 text-center">
@@ -244,84 +263,85 @@ export const StudentManagement = () => {
         </Card>
       )}
 
-      {/* Students Grid */}
-      {!isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredStudents.map((student) => (
-            <Card key={student.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{student.name}</CardTitle>
-                    <p className="text-sm text-gray-600">{student.rollNumber}</p>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleEdit(student)}>
-                        <Edit className="w-4 h-4 mr-2" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Eye className="w-4 h-4 mr-2" />
-                        View Details
-                      </DropdownMenuItem>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <DropdownMenuItem 
-                            className="text-red-600"
-                            disabled={deleteStudentMutation.isPending}
-                            onSelect={(e) => e.preventDefault()}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete {student.name}? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={() => handleDeleteStudent(student.id)}
-                              className="bg-red-600 hover:bg-red-700"
+      {/* Students Table */}
+      {!isLoading && filteredStudents.length > 0 && (
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Roll Number</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Class</TableHead>
+                  <TableHead>Section</TableHead>
+                  <TableHead>Guardian</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredStudents.map((student) => (
+                  <TableRow key={student.id}>
+                    <TableCell className="font-medium">{student.rollNumber}</TableCell>
+                    <TableCell>{student.name}</TableCell>
+                    <TableCell>{student.class}</TableCell>
+                    <TableCell>{student.section}</TableCell>
+                    <TableCell>{student.guardian || 'N/A'}</TableCell>
+                    <TableCell>{student.guardianContact || 'N/A'}</TableCell>
+                    <TableCell>{student.email || 'N/A'}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleView(student)}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(student)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={deleteStudentMutation.isPending}
                             >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Class:</span>
-                    <Badge variant="secondary">{student.class}-{student.section}</Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Guardian:</span>
-                    <span className="text-sm font-medium">{student.guardian || 'N/A'}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Contact:</span>
-                    <span className="text-sm">{student.guardianContact || 'N/A'}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete {student.name}? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => handleDeleteStudent(student.id)}
+                                className="bg-destructive hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
 
       {!isLoading && filteredStudents.length === 0 && (
@@ -348,6 +368,68 @@ export const StudentManagement = () => {
           isLoading={createStudentMutation.isPending || updateStudentMutation.isPending}
         />
       )}
+
+      {/* View Student Details Dialog */}
+      <Dialog open={!!viewingStudent} onOpenChange={(open) => !open && setViewingStudent(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Student Details</DialogTitle>
+          </DialogHeader>
+          {viewingStudent && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Full Name</h3>
+                  <p className="text-base">{viewingStudent.name}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Roll Number</h3>
+                  <p className="text-base">{viewingStudent.rollNumber}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Class</h3>
+                  <p className="text-base">{viewingStudent.class}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Section</h3>
+                  <p className="text-base">{viewingStudent.section}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Email</h3>
+                  <p className="text-base">{viewingStudent.email || 'Not provided'}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Registration Date</h3>
+                  <p className="text-base">
+                    {viewingStudent.registrationDate 
+                      ? new Date(viewingStudent.registrationDate).toLocaleDateString()
+                      : 'Not provided'}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Guardian Name</h3>
+                  <p className="text-base">{viewingStudent.guardian || 'Not provided'}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Guardian Contact</h3>
+                  <p className="text-base">{viewingStudent.guardianContact || 'Not provided'}</p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => setViewingStudent(null)}>
+                  Close
+                </Button>
+                <Button onClick={() => {
+                  setViewingStudent(null);
+                  handleEdit(viewingStudent);
+                }}>
+                  Edit Student
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

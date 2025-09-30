@@ -19,6 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useExamStore } from '@/store/examStore';
+import { useTeacherAuth } from '@/hooks/useTeacherAuth';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -33,6 +34,7 @@ export const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
   const { currentTeacher, dashboardStats } = useExamStore();
+  const { signOut } = useTeacherAuth();
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
@@ -87,7 +89,7 @@ export const DashboardLayout = () => {
                 <p className="text-sm font-medium text-gray-900">{currentTeacher.name}</p>
                 <p className="text-xs text-gray-500">{currentTeacher.department}</p>
               </div>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={signOut}>
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>

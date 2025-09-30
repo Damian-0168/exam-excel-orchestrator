@@ -18,6 +18,9 @@ import { useExamStore } from '@/store/examStore';
 import { PerformanceChart } from './PerformanceChart';
 import { RecentActivity } from './RecentActivity';
 import { UpcomingExams } from './UpcomingExams';
+import { useStudents } from '@/hooks/useStudents';
+import { useTeacherAuth } from '@/hooks/useTeacherAuth';
+import { useSubjects } from '@/hooks/useSubjects';
 
 export const Dashboard = () => {
   const { 
@@ -30,20 +33,39 @@ export const Dashboard = () => {
     setCurrentTeacher
   } = useExamStore();
 
+  // Fetch real data from database
+  const { data: dbStudents, isLoading: studentsLoading } = useStudents();
+  const { user } = useTeacherAuth();
+  const { data: subjects } = useSubjects();
+
   useEffect(() => {
-    // Initialize with sample teacher
-    if (!currentTeacher) {
+    // Set current teacher from auth user
+    if (user && !currentTeacher) {
+      const userMetadata = user.user_metadata;
+      const teacherSubjects = userMetadata?.subjects || [];
+      
+      // Get subject names from the subjects array
+      const subjectNames = subjects
+        ?.filter(s => teacherSubjects.includes(s.id))
+        .map(s => s.name)
+        .join(', ') || 'No subjects assigned';
+
       setCurrentTeacher({
-        id: '1',
-        name: 'Dr. Sarah Johnson',
-        email: 'sarah.johnson@school.edu',
-        subjects: ['1', '2'], // Math and English
-        classes: ['10A', '10B', '11A'],
+        id: user.id,
+        name: userMetadata?.name || user.email || 'Teacher',
+        email: user.email || '',
+        subjects: teacherSubjects,
+        classes: [],
         role: 'teacher',
-        department: 'Mathematics',
-        joinDate: '2020-08-15'
+        department: subjectNames,
+        joinDate: new Date(user.created_at).toISOString().split('T')[0]
       });
     }
+  }, [user, subjects, currentTeacher, setCurrentTeacher]);
+
+  useEffect(() => {
+    // Use real student count from database
+    const studentCount = dbStudents?.length || 0;
 
     // Calculate dashboard stats
     const upcomingExams = exams.filter(exam => exam.status === 'upcoming').length;
@@ -95,14 +117,14 @@ export const Dashboard = () => {
     ];
 
     setDashboardStats({
-      totalStudents: students.length,
+      totalStudents: studentCount,
       totalExams: exams.length,
       upcomingExams,
       pendingEvaluations: Math.max(0, pendingEvaluations),
       classPerformance,
       recentActivity
     });
-  }, [students, exams, scores, currentTeacher, setCurrentTeacher, setDashboardStats]);
+  }, [dbStudents, students, exams, scores, currentTeacher, setCurrentTeacher, setDashboardStats]);
 
   const statCards = [
     {

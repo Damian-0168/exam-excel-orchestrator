@@ -1,10 +1,8 @@
-
 import { useState } from 'react';
-import { Plus, Search, Filter, MoreHorizontal, Edit, Trash2, Eye, Upload } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -30,12 +28,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
 import { 
   Select,
   SelectContent,

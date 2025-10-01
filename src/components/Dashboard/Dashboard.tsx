@@ -1,5 +1,5 @@
-
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Users, 
   BookOpen, 
@@ -23,6 +23,8 @@ import { useTeacherAuth } from '@/hooks/useTeacherAuth';
 import { useSubjects } from '@/hooks/useSubjects';
 
 export const Dashboard = () => {
+  const navigate = useNavigate();
+  
   const { 
     dashboardStats, 
     setDashboardStats, 
@@ -125,6 +127,10 @@ export const Dashboard = () => {
       recentActivity
     });
   }, [dbStudents, students, exams, scores, currentTeacher, setCurrentTeacher, setDashboardStats]);
+
+  const handleAddStudent = () => {
+    navigate('/students', { state: { openAddForm: true } });
+  };
 
   const statCards = [
     {
@@ -249,7 +255,11 @@ export const Dashboard = () => {
               <BookOpen className="w-4 h-4 mr-2" />
               Create New Exam
             </Button>
-            <Button className="w-full justify-start" variant="outline">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={handleAddStudent}
+            >
               <Users className="w-4 h-4 mr-2" />
               Add New Student
             </Button>

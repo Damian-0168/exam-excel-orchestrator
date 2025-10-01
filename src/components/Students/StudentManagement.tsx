@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Plus, Search, Edit, Trash2, Eye, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +43,7 @@ import { useStudents, useCreateStudent, useUpdateStudent, useDeleteStudent } fro
 import { useToast } from '@/hooks/use-toast';
 
 export const StudentManagement = () => {
+  const location = useLocation();
   const [showForm, setShowForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,6 +57,15 @@ export const StudentManagement = () => {
   const createStudentMutation = useCreateStudent();
   const updateStudentMutation = useUpdateStudent();
   const deleteStudentMutation = useDeleteStudent();
+
+  // Check if we should auto-open the form from navigation state
+  useEffect(() => {
+    if (location.state?.openAddForm) {
+      setShowForm(true);
+      // Clear the state to prevent reopening on subsequent renders
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const classes = ['Form 1', 'Form 2', 'Form 3', 'Form 4'];
   const sections = ['A', 'B', 'C', 'D'];

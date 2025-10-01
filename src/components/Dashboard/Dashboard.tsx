@@ -1,5 +1,4 @@
-
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { 
   Users, 
   BookOpen, 
@@ -18,11 +17,16 @@ import { useExamStore } from '@/store/examStore';
 import { PerformanceChart } from './PerformanceChart';
 import { RecentActivity } from './RecentActivity';
 import { UpcomingExams } from './UpcomingExams';
-import { useStudents } from '@/hooks/useStudents';
+import { useStudents, useCreateStudent } from '@/hooks/useStudents';
 import { useTeacherAuth } from '@/hooks/useTeacherAuth';
 import { useSubjects } from '@/hooks/useSubjects';
+import { StudentForm } from '@/components/Students/StudentForm';
+import { Student } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 export const Dashboard = () => {
+  const [showStudentForm, setShowStudentForm] = useState(false);
+  
   const { 
     dashboardStats, 
     setDashboardStats, 
@@ -37,6 +41,8 @@ export const Dashboard = () => {
   const { data: dbStudents, isLoading: studentsLoading } = useStudents();
   const { user } = useTeacherAuth();
   const { data: subjects } = useSubjects();
+  const createStudentMutation = useCreateStudent();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Set current teacher from auth user
@@ -125,6 +131,24 @@ export const Dashboard = () => {
       recentActivity
     });
   }, [dbStudents, students, exams, scores, currentTeacher, setCurrentTeacher, setDashboardStats]);
+
+  const handleCreateStudent = async (studentData: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      await createStudentMutation.mutateAsync(studentData);
+      setShowStudentForm(false);
+      toast({
+        title: "Success",
+        description: "Student created successfully",
+      });
+    } catch (error) {
+      console.error('Failed to create student:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create student. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const statCards = [
     {
@@ -249,7 +273,12 @@ export const Dashboard = () => {
               <BookOpen className="w-4 h-4 mr-2" />
               Create New Exam
             </Button>
-            <Button className="w-full justify-start" variant="outline">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => setShowStudentForm(true)}
+              disabled={createStudentMutation.isPending}
+            >
               <Users className="w-4 h-4 mr-2" />
               Add New Student
             </Button>
@@ -292,6 +321,15 @@ export const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Student Form Modal */}
+      {showStudentForm && (
+        <StudentForm
+          onSubmit={handleCreateStudent}
+          onCancel={() => setShowStudentForm(false)}
+          isLoading={createStudentMutation.isPending}
+        />
       )}
     </div>
   );

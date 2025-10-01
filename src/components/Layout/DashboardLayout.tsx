@@ -53,7 +53,7 @@ export const DashboardLayout = () => {
             </div>
             {sidebarOpen && (
               <div className="ml-3">
-                <h1 className="text-lg font-semibold text-gray-900">EduManage</h1>
+                <h1 className="text-lg font-semibold text-gray-900">School Management</h1>
                 <p className="text-sm text-gray-500">Teacher Portal</p>
               </div>
             )}

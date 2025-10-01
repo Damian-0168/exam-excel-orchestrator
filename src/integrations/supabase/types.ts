@@ -328,6 +328,44 @@ export type Database = {
           },
         ]
       }
+      teacher_profiles: {
+        Row: {
+          created_at: string
+          department: string | null
+          id: string
+          name: string
+          school_id: string
+          subjects: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          department?: string | null
+          id: string
+          name: string
+          school_id: string
+          subjects?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          department?: string | null
+          id?: string
+          name?: string
+          school_id?: string
+          subjects?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_profiles_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teacher_subjects: {
         Row: {
           classes: string[]
@@ -435,7 +473,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_teacher_school_id: {
+        Args: { _teacher_id: string }
+        Returns: string
+      }
+      teacher_can_access_student: {
+        Args: { _student_id: string; _teacher_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       exam_status: "upcoming" | "ongoing" | "completed" | "cancelled"

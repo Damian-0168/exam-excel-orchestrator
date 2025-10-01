@@ -2,6 +2,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Student } from '@/types';
+import { useTeacherProfile } from './useTeacherProfile';
+import { useTeacherAuth } from './useTeacherAuth';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 type DatabaseStudent = Tables<'students'>;
@@ -70,13 +72,25 @@ export const useStudents = () => {
 
 export const useCreateStudent = () => {
   const queryClient = useQueryClient();
+  const { user } = useTeacherAuth();
+  const { data: teacherProfile } = useTeacherProfile(user?.id);
 
   return useMutation({
     mutationFn: async (student: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>) => {
       console.log('Creating student:', student);
+      
+      if (!teacherProfile?.school_id) {
+        throw new Error('Teacher school not found. Please contact administrator.');
+      }
+
+      const insertData = {
+        ...transformToInsert(student),
+        school_id: teacherProfile.school_id
+      };
+
       const { data, error } = await supabase
         .from('students')
-        .insert(transformToInsert(student))
+        .insert(insertData)
         .select()
         .single();
 

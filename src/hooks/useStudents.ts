@@ -108,7 +108,13 @@ export const useCreateStudent = () => {
 
       if (error) {
         console.error('Error creating student:', error);
-        throw error;
+        
+        // Provide user-friendly error messages
+        if (error.code === '23505' && error.message.includes('roll_number')) {
+          throw new Error(`Roll number "${student.rollNumber}" already exists. Please use a different roll number.`);
+        }
+        
+        throw new Error(error.message || 'Failed to create student. Please try again.');
       }
 
       console.log('Student created successfully:', data);

@@ -79,15 +79,27 @@ export const useCreateStudent = () => {
     mutationFn: async (student: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>) => {
       console.log('Creating student:', student);
       
-      if (!teacherProfile?.school_id) {
+      let schoolId = teacherProfile?.school_id;
+
+      if (!schoolId) {
+        const { data: rpcSchoolId, error: rpcError } = await supabase.rpc(
+          'get_teacher_school_id',
+          { _teacher_id: user?.id }
+        );
+        if (rpcError) {
+          console.error('Error fetching school id via RPC:', rpcError);
+        }
+        schoolId = rpcSchoolId || undefined;
+      }
+
+      if (!schoolId) {
         throw new Error('Teacher school not found. Please contact administrator.');
       }
 
       const insertData = {
         ...transformToInsert(student),
-        school_id: teacherProfile.school_id
+        school_id: schoolId
       };
-
       const { data, error } = await supabase
         .from('students')
         .insert(insertData)

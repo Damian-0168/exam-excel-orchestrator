@@ -3,7 +3,6 @@
 export interface Student {
   id: string;
   name: string;
-  email: string;
   rollNumber: string;
   class: string;
   section: string;

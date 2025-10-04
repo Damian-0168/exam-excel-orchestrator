@@ -38,7 +38,8 @@ export const useTeacherAuth = () => {
     email: string,
     password: string,
     name: string,
-    subjectIds: string[]
+    subjectIds: string[],
+    schoolId: string
   ) => {
     try {
       setLoading(true);
@@ -47,10 +48,12 @@ export const useTeacherAuth = () => {
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             name,
             role: "teacher",
             subjects: subjectIds,
+            school_id: schoolId,
           }, // stored in user_metadata
         },
       });

@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useTeacherAuth } from '@/hooks/useTeacherAuth';
 import { useSubjects } from '@/hooks/useSubjects';
+import { useSchools } from '@/hooks/useSchools';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 export const TeacherAuth = () => {
@@ -16,7 +18,8 @@ export const TeacherAuth = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    selectedSubjects: [] as string[]
+    selectedSubjects: [] as string[],
+    schoolId: ''
   });
   const [signInData, setSignInData] = useState({
     email: '',
@@ -28,6 +31,7 @@ export const TeacherAuth = () => {
 
   const { signUp, signIn, loading } = useTeacherAuth();
   const { data: subjects = [] } = useSubjects();
+  const { data: schools = [], isLoading: schoolsLoading } = useSchools();
   const { toast } = useToast();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -60,11 +64,21 @@ export const TeacherAuth = () => {
       return;
     }
 
+    if (!signUpData.schoolId) {
+      toast({
+        title: "Error",
+        description: "Please select a school",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const result = await signUp(
       signUpData.email,
       signUpData.password,
       signUpData.name,
-      signUpData.selectedSubjects
+      signUpData.selectedSubjects,
+      signUpData.schoolId
     );
 
     if (result.success) {
@@ -78,7 +92,8 @@ export const TeacherAuth = () => {
         email: '',
         password: '',
         confirmPassword: '',
-        selectedSubjects: []
+        selectedSubjects: [],
+        schoolId: ''
       });
     } else {
       toast({
@@ -251,6 +266,26 @@ export const TeacherAuth = () => {
                   </div>
                 </div>
                 
+                <div className="space-y-2">
+                  <Label htmlFor="signup-school">School</Label>
+                  <Select 
+                    value={signUpData.schoolId} 
+                    onValueChange={(value) => setSignUpData(prev => ({ ...prev, schoolId: value }))}
+                    disabled={schoolsLoading}
+                  >
+                    <SelectTrigger id="signup-school">
+                      <SelectValue placeholder="Select your school" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {schools.map((school) => (
+                        <SelectItem key={school.id} value={school.id}>
+                          {school.name} ({school.code})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Select Subjects</Label>
                   <div className="max-h-48 overflow-y-auto space-y-2 border rounded-md p-3">

@@ -2,6 +2,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Student } from '@/types';
+import { useTeacherProfile } from './useTeacherProfile';
+import { useTeacherAuth } from './useTeacherAuth';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
 type DatabaseStudent = Tables<'students'>;
@@ -12,7 +14,6 @@ type DatabaseStudentUpdate = TablesUpdate<'students'>;
 const transformDatabaseStudent = (dbStudent: DatabaseStudent): Student => ({
   id: dbStudent.id,
   name: dbStudent.name,
-  email: dbStudent.email || '',
   rollNumber: dbStudent.roll_number || '',
   class: dbStudent.class,
   section: dbStudent.section,
@@ -26,7 +27,6 @@ const transformDatabaseStudent = (dbStudent: DatabaseStudent): Student => ({
 // Transform app student to database format for insert
 const transformToInsert = (student: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>): DatabaseStudentInsert => ({
   name: student.name,
-  email: student.email || null,
   roll_number: student.rollNumber || null,
   class: student.class,
   section: student.section,
@@ -38,7 +38,6 @@ const transformToInsert = (student: Omit<Student, 'id' | 'createdAt' | 'updatedA
 // Transform app student to database format for update
 const transformToUpdate = (student: Partial<Student>): DatabaseStudentUpdate => ({
   ...(student.name && { name: student.name }),
-  ...(student.email !== undefined && { email: student.email || null }),
   ...(student.rollNumber && { roll_number: student.rollNumber }),
   ...(student.class && { class: student.class }),
   ...(student.section && { section: student.section }),
@@ -70,19 +69,49 @@ export const useStudents = () => {
 
 export const useCreateStudent = () => {
   const queryClient = useQueryClient();
+  const { user } = useTeacherAuth();
+  const { data: teacherProfile } = useTeacherProfile(user?.id);
 
   return useMutation({
     mutationFn: async (student: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>) => {
       console.log('Creating student:', student);
+      
+      let schoolId = teacherProfile?.school_id;
+
+      if (!schoolId) {
+        const { data: rpcSchoolId, error: rpcError } = await supabase.rpc(
+          'get_teacher_school_id',
+          { _teacher_id: user?.id }
+        );
+        if (rpcError) {
+          console.error('Error fetching school id via RPC:', rpcError);
+        }
+        schoolId = rpcSchoolId || undefined;
+      }
+
+      if (!schoolId) {
+        throw new Error('Teacher school not found. Please contact administrator.');
+      }
+
+      const insertData = {
+        ...transformToInsert(student),
+        school_id: schoolId
+      };
       const { data, error } = await supabase
         .from('students')
-        .insert(transformToInsert(student))
+        .insert(insertData)
         .select()
         .single();
 
       if (error) {
         console.error('Error creating student:', error);
-        throw error;
+        
+        // Provide user-friendly error messages
+        if (error.code === '23505' && error.message.includes('roll_number')) {
+          throw new Error(`Roll number "${student.rollNumber}" already exists. Please use a different roll number.`);
+        }
+        
+        throw new Error(error.message || 'Failed to create student. Please try again.');
       }
 
       console.log('Student created successfully:', data);

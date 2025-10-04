@@ -279,7 +279,6 @@ export const StudentManagement = () => {
                   <TableHead>Section</TableHead>
                   <TableHead>Guardian</TableHead>
                   <TableHead>Contact</TableHead>
-                  <TableHead>Email</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -292,7 +291,6 @@ export const StudentManagement = () => {
                     <TableCell>{student.section}</TableCell>
                     <TableCell>{student.guardian || 'N/A'}</TableCell>
                     <TableCell>{student.guardianContact || 'N/A'}</TableCell>
-                    <TableCell>{student.email || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button
@@ -396,10 +394,6 @@ export const StudentManagement = () => {
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Section</h3>
                   <p className="text-base">{viewingStudent.section}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Email</h3>
-                  <p className="text-base">{viewingStudent.email || 'Not provided'}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Registration Date</h3>

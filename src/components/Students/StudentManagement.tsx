@@ -279,7 +279,6 @@ export const StudentManagement = () => {
                   <TableHead>Section</TableHead>
                   <TableHead>Guardian</TableHead>
                   <TableHead>Contact</TableHead>
-                  <TableHead>Email</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -292,7 +291,6 @@ export const StudentManagement = () => {
                     <TableCell>{student.section}</TableCell>
                     <TableCell>{student.guardian || 'N/A'}</TableCell>
                     <TableCell>{student.guardianContact || 'N/A'}</TableCell>
-                    <TableCell>{student.email || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button

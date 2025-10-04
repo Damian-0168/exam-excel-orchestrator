@@ -396,10 +396,6 @@ export const StudentManagement = () => {
                   <p className="text-base">{viewingStudent.section}</p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Email</h3>
-                  <p className="text-base">{viewingStudent.email || 'Not provided'}</p>
-                </div>
-                <div>
                   <h3 className="text-sm font-medium text-muted-foreground mb-1">Registration Date</h3>
                   <p className="text-base">
                     {viewingStudent.registrationDate 

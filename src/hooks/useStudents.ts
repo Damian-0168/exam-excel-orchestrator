@@ -14,7 +14,6 @@ type DatabaseStudentUpdate = TablesUpdate<'students'>;
 const transformDatabaseStudent = (dbStudent: DatabaseStudent): Student => ({
   id: dbStudent.id,
   name: dbStudent.name,
-  email: dbStudent.email || '',
   rollNumber: dbStudent.roll_number || '',
   class: dbStudent.class,
   section: dbStudent.section,
@@ -28,7 +27,6 @@ const transformDatabaseStudent = (dbStudent: DatabaseStudent): Student => ({
 // Transform app student to database format for insert
 const transformToInsert = (student: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>): DatabaseStudentInsert => ({
   name: student.name,
-  email: student.email || null,
   roll_number: student.rollNumber || null,
   class: student.class,
   section: student.section,
@@ -40,7 +38,6 @@ const transformToInsert = (student: Omit<Student, 'id' | 'createdAt' | 'updatedA
 // Transform app student to database format for update
 const transformToUpdate = (student: Partial<Student>): DatabaseStudentUpdate => ({
   ...(student.name && { name: student.name }),
-  ...(student.email !== undefined && { email: student.email || null }),
   ...(student.rollNumber && { roll_number: student.rollNumber }),
   ...(student.class && { class: student.class }),
   ...(student.section && { section: student.section }),

@@ -141,7 +141,6 @@ export type Database = {
           code: string
           contact_email: string | null
           contact_phone: string | null
-          created_at: string
           id: string
           name: string
           updated_at: string
@@ -151,7 +150,6 @@ export type Database = {
           code: string
           contact_email?: string | null
           contact_phone?: string | null
-          created_at?: string
           id?: string
           name: string
           updated_at?: string
@@ -161,7 +159,6 @@ export type Database = {
           code?: string
           contact_email?: string | null
           contact_phone?: string | null
-          created_at?: string
           id?: string
           name?: string
           updated_at?: string

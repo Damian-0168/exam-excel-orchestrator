@@ -6,11 +6,13 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useTeacherAuth } from '@/hooks/useTeacherAuth';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useSchools } from '@/hooks/useSchools';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2, Eye, EyeOff, Plus } from 'lucide-react';
 
 export const TeacherAuth = () => {
   const [signUpData, setSignUpData] = useState({
@@ -28,10 +30,19 @@ export const TeacherAuth = () => {
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isNewSchoolDialogOpen, setIsNewSchoolDialogOpen] = useState(false);
+  const [isCreatingSchool, setIsCreatingSchool] = useState(false);
+  const [newSchoolData, setNewSchoolData] = useState({
+    name: '',
+    code: '',
+    address: '',
+    contactEmail: '',
+    contactPhone: ''
+  });
 
   const { signUp, signIn, loading } = useTeacherAuth();
   const { data: subjects = [] } = useSubjects();
-  const { data: schools = [], isLoading: schoolsLoading } = useSchools();
+  const { data: schools = [], isLoading: schoolsLoading, refetch: refetchSchools } = useSchools();
   const { toast } = useToast();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -130,6 +141,66 @@ export const TeacherAuth = () => {
         ? [...prev.selectedSubjects, subjectId]
         : prev.selectedSubjects.filter(id => id !== subjectId)
     }));
+  };
+
+  const handleCreateSchool = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newSchoolData.name || !newSchoolData.code) {
+      toast({
+        title: "Error",
+        description: "School name and code are required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsCreatingSchool(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('schools')
+        .insert({
+          name: newSchoolData.name,
+          code: newSchoolData.code,
+          address: newSchoolData.address || null,
+          contact_email: newSchoolData.contactEmail || null,
+          contact_phone: newSchoolData.contactPhone || null
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "School created successfully"
+      });
+
+      // Refresh schools list
+      await refetchSchools();
+
+      // Set the newly created school as selected
+      setSignUpData(prev => ({ ...prev, schoolId: data.id }));
+
+      // Reset form and close dialog
+      setNewSchoolData({
+        name: '',
+        code: '',
+        address: '',
+        contactEmail: '',
+        contactPhone: ''
+      });
+      setIsNewSchoolDialogOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create school",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCreatingSchool(false);
+    }
   };
 
   return (
@@ -267,7 +338,90 @@ export const TeacherAuth = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-school">School</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="signup-school">School *</Label>
+                    <Dialog open={isNewSchoolDialogOpen} onOpenChange={setIsNewSchoolDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button type="button" variant="outline" size="sm" className="h-8">
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add New School
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[500px]">
+                        <DialogHeader>
+                          <DialogTitle>Add New School</DialogTitle>
+                          <DialogDescription>
+                            Create a new school to add to the system
+                          </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleCreateSchool} className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="school-name">School Name *</Label>
+                            <Input
+                              id="school-name"
+                              value={newSchoolData.name}
+                              onChange={(e) => setNewSchoolData(prev => ({ ...prev, name: e.target.value }))}
+                              placeholder="e.g., Greenwood High School"
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="school-code">School Code *</Label>
+                            <Input
+                              id="school-code"
+                              value={newSchoolData.code}
+                              onChange={(e) => setNewSchoolData(prev => ({ ...prev, code: e.target.value }))}
+                              placeholder="e.g., GHS001"
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="school-address">Address</Label>
+                            <Input
+                              id="school-address"
+                              value={newSchoolData.address}
+                              onChange={(e) => setNewSchoolData(prev => ({ ...prev, address: e.target.value }))}
+                              placeholder="School address"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="school-email">Contact Email</Label>
+                            <Input
+                              id="school-email"
+                              type="email"
+                              value={newSchoolData.contactEmail}
+                              onChange={(e) => setNewSchoolData(prev => ({ ...prev, contactEmail: e.target.value }))}
+                              placeholder="contact@school.com"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="school-phone">Contact Phone</Label>
+                            <Input
+                              id="school-phone"
+                              type="tel"
+                              value={newSchoolData.contactPhone}
+                              onChange={(e) => setNewSchoolData(prev => ({ ...prev, contactPhone: e.target.value }))}
+                              placeholder="+1234567890"
+                            />
+                          </div>
+                          <DialogFooter>
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              onClick={() => setIsNewSchoolDialogOpen(false)}
+                              disabled={isCreatingSchool}
+                            >
+                              Cancel
+                            </Button>
+                            <Button type="submit" disabled={isCreatingSchool}>
+                              {isCreatingSchool && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                              Create School
+                            </Button>
+                          </DialogFooter>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                   <Select 
                     value={signUpData.schoolId} 
                     onValueChange={(value) => setSignUpData(prev => ({ ...prev, schoolId: value }))}

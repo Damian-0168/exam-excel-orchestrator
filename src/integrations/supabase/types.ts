@@ -246,7 +246,6 @@ export type Database = {
         Row: {
           class: string
           created_at: string
-          email: string | null
           guardian: string | null
           guardian_contact: string | null
           id: string
@@ -260,7 +259,6 @@ export type Database = {
         Insert: {
           class: string
           created_at?: string
-          email?: string | null
           guardian?: string | null
           guardian_contact?: string | null
           id?: string
@@ -274,7 +272,6 @@ export type Database = {
         Update: {
           class?: string
           created_at?: string
-          email?: string | null
           guardian?: string | null
           guardian_contact?: string | null
           id?: string

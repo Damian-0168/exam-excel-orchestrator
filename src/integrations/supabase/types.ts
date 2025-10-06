@@ -141,7 +141,6 @@ export type Database = {
           code: string
           contact_email: string | null
           contact_phone: string | null
-          created_at: string
           id: string
           name: string
           updated_at: string
@@ -151,7 +150,6 @@ export type Database = {
           code: string
           contact_email?: string | null
           contact_phone?: string | null
-          created_at?: string
           id?: string
           name: string
           updated_at?: string
@@ -161,7 +159,6 @@ export type Database = {
           code?: string
           contact_email?: string | null
           contact_phone?: string | null
-          created_at?: string
           id?: string
           name?: string
           updated_at?: string
@@ -246,7 +243,6 @@ export type Database = {
         Row: {
           class: string
           created_at: string
-          email: string | null
           guardian: string | null
           guardian_contact: string | null
           id: string
@@ -260,7 +256,6 @@ export type Database = {
         Insert: {
           class: string
           created_at?: string
-          email?: string | null
           guardian?: string | null
           guardian_contact?: string | null
           id?: string
@@ -274,7 +269,6 @@ export type Database = {
         Update: {
           class?: string
           created_at?: string
-          email?: string | null
           guardian?: string | null
           guardian_contact?: string | null
           id?: string

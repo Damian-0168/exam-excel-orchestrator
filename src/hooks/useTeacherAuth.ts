@@ -93,6 +93,10 @@ export const useTeacherAuth = () => {
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
+    // Clear all localStorage to remove any cached data
+    localStorage.clear();
+    // Force a page reload to reset all state
+    window.location.reload();
   };
 
   return {

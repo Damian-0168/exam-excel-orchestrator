@@ -21,6 +21,8 @@ import { UpcomingExams } from './UpcomingExams';
 import { useStudents } from '@/hooks/useStudents';
 import { useTeacherAuth } from '@/hooks/useTeacherAuth';
 import { useSubjects } from '@/hooks/useSubjects';
+import { useTeacherProfile } from '@/hooks/useTeacherProfile';
+import { useSchools } from '@/hooks/useSchools';
 
 export const Dashboard = () => {
   const navigate = useNavigate();
@@ -39,6 +41,11 @@ export const Dashboard = () => {
   const { data: dbStudents, isLoading: studentsLoading } = useStudents();
   const { user } = useTeacherAuth();
   const { data: subjects } = useSubjects();
+  const { data: teacherProfile } = useTeacherProfile(user?.id);
+  const { data: schools } = useSchools();
+  
+  // Get the school name based on teacher's school_id
+  const schoolName = schools?.find(school => school.id === teacherProfile?.school_id)?.name;
 
   useEffect(() => {
     // Set current teacher from auth user
@@ -169,6 +176,11 @@ export const Dashboard = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Welcome back, {currentTeacher?.name || 'Teacher'}!
+          {schoolName && (
+            <span className="text-xl font-normal text-gray-600 ml-2">
+              - {schoolName}
+            </span>
+          )}
         </h1>
         <p className="text-gray-600">
           Here's what's happening with your classes today.

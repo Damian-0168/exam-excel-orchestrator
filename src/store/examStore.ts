@@ -62,6 +62,7 @@ interface ExamStore {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
+  resetStore: () => void;
 }
 
 // Default grade scale
@@ -236,10 +237,17 @@ export const useExamStore = create<ExamStore>()(
         return total / classScores.length;
       },
       
-      // Utility actions
-      setLoading: (loading) => set({ loading }),
-      setError: (error) => set({ error }),
-      clearError: () => set({ error: null })
+  // Utility actions
+  setLoading: (loading) => set({ loading }),
+  setError: (error) => set({ error }),
+  clearError: () => set({ error: null }),
+  resetStore: () => set({
+    currentTeacher: null,
+    dashboardStats: null,
+    students: [],
+    exams: [],
+    scores: []
+  })
     }),
     { name: 'exam-store' }
   )

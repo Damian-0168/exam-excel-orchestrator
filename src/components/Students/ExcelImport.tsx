@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -130,16 +129,15 @@ export const ExcelImport = ({ onImport, isLoading }: ExcelImportProps) => {
             id="excel-upload"
             disabled={isLoading}
           />
-          <Label htmlFor="excel-upload" asChild>
-            <Button 
-              variant="default" 
-              className="flex items-center gap-2 cursor-pointer"
-              disabled={isLoading}
-            >
-              <Upload className="h-4 w-4" />
-              Upload Excel File
-            </Button>
-          </Label>
+          <Button 
+            variant="default" 
+            className="flex items-center gap-2"
+            disabled={isLoading}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload className="h-4 w-4" />
+            Upload Excel File
+          </Button>
         </div>
       </div>
     </div>

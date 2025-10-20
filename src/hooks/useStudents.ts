@@ -5,6 +5,7 @@ import { Student } from '@/types';
 import { useTeacherProfile } from './useTeacherProfile';
 import { useTeacherAuth } from './useTeacherAuth';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { generateNextRollNumber, isValidRollNumberFormat } from '@/utils/rollNumberGenerator';
 
 type DatabaseStudent = Tables<'students'>;
 type DatabaseStudentInsert = TablesInsert<'students'>;
@@ -93,10 +94,20 @@ export const useCreateStudent = () => {
         throw new Error('Teacher school not found. Please contact administrator.');
       }
 
+      // Auto-generate roll number if not provided or invalid
+      let rollNumber = student.rollNumber?.trim() || '';
+      
+      if (!rollNumber || !isValidRollNumberFormat(rollNumber)) {
+        console.log('Generating new roll number...');
+        rollNumber = await generateNextRollNumber();
+        console.log('Generated roll number:', rollNumber);
+      }
+
       const insertData = {
-        ...transformToInsert(student),
+        ...transformToInsert({ ...student, rollNumber }),
         school_id: schoolId
       };
+      
       const { data, error } = await supabase
         .from('students')
         .insert(insertData)
@@ -108,7 +119,7 @@ export const useCreateStudent = () => {
         
         // Provide user-friendly error messages
         if (error.code === '23505' && error.message.includes('roll_number')) {
-          throw new Error(`Roll number "${student.rollNumber}" already exists. Please use a different roll number.`);
+          throw new Error(`Roll number "${rollNumber}" already exists. Please use a different roll number.`);
         }
         
         throw new Error(error.message || 'Failed to create student. Please try again.');

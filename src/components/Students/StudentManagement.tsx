@@ -98,17 +98,46 @@ export const StudentManagement = () => {
   };
 
   const handleBulkImport = async (students: Omit<Student, 'id' | 'createdAt' | 'updatedAt'>[]) => {
+    let successCount = 0;
+    let errorCount = 0;
+    const errors: string[] = [];
+
     try {
       for (const student of students) {
-        await createStudentMutation.mutateAsync(student);
+        try {
+          await createStudentMutation.mutateAsync(student);
+          successCount++;
+        } catch (error) {
+          errorCount++;
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          errors.push(`${student.name}: ${errorMsg}`);
+          console.error(`Failed to import student ${student.name}:`, error);
+        }
       }
+
       setShowExcelImport(false);
-      toast({
-        title: "Success",
-        description: `${students.length} students imported successfully`,
-      });
+      
+      if (errorCount === 0) {
+        toast({
+          title: "Import Successful",
+          description: `All ${successCount} students imported successfully`,
+        });
+      } else if (successCount > 0) {
+        toast({
+          title: "Partial Import",
+          description: `${successCount} students imported, ${errorCount} failed. Check console for details.`,
+          variant: "destructive",
+        });
+        console.error('Import errors:', errors);
+      } else {
+        toast({
+          title: "Import Failed",
+          description: `Failed to import all students. ${errors[0] || 'Please check the file format.'}`,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
-      console.error('Failed to import students:', error);
+      console.error('Bulk import error:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to import students. Please try again.",

@@ -58,14 +58,23 @@ export const ExcelImport = ({ onImport, isLoading }: ExcelImportProps) => {
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
+      if (!jsonData || jsonData.length === 0) {
+        toast({
+          title: "Empty File",
+          description: "The Excel file contains no data",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const students = jsonData.map((row: any) => ({
-        name: row.name || '',
-        registrationDate: row.registrationDate || '',
-        class: row.class || '',
-        section: row.section || '',
-        rollNumber: row.rollNumber || '',
-        guardian: row.guardian || '',
-        guardianContact: row.guardianContact || ''
+        name: row.name || row.Name || '',
+        registrationDate: row.registrationDate || row.RegistrationDate || row.registration_date || '',
+        class: row.class || row.Class || '',
+        section: row.section || row.Section || '',
+        rollNumber: row.rollNumber || row.RollNumber || row.roll_number || '',
+        guardian: row.guardian || row.Guardian || '',
+        guardianContact: row.guardianContact || row.GuardianContact || row.guardian_contact || ''
       }));
 
       // Validate required fields
@@ -84,6 +93,11 @@ export const ExcelImport = ({ onImport, isLoading }: ExcelImportProps) => {
 
       await onImport(students);
       
+      toast({
+        title: "Import Started",
+        description: `Processing ${students.length} students...`
+      });
+
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';

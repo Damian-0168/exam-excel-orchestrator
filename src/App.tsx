@@ -9,6 +9,7 @@ import { TeacherAuth } from "./components/Auth/TeacherAuth";
 import { DashboardLayout } from "./components/Layout/DashboardLayout";
 import { Dashboard } from "./components/Dashboard/Dashboard";
 import { StudentManagement } from "./components/Students/StudentManagement";
+import { ExamManagement } from "./components/Exams/ExamManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,7 +34,7 @@ const AppContent = () => {
       <Route path="/" element={<DashboardLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="students" element={<StudentManagement />} />
-        <Route path="exams" element={<div className="p-8 text-center text-gray-500">Exam Management - Coming Soon</div>} />
+        <Route path="exams" element={<ExamManagement />} />
         <Route path="scores" element={<div className="p-8 text-center text-gray-500">Score Entry - Coming Soon</div>} />
         <Route path="reports" element={<div className="p-8 text-center text-gray-500">Reports - Coming Soon</div>} />
         <Route path="settings" element={<div className="p-8 text-center text-gray-500">Settings - Coming Soon</div>} />

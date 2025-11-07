@@ -56,14 +56,14 @@ export type Database = {
           class: string
           created_at: string
           created_by: string | null
-          end_date: string
+          exam_date: string
           id: string
+          is_visible: boolean
           name: string
           pdf_file_path: string | null
           section: string
-          start_date: string
           status: Database["public"]["Enums"]["exam_status"]
-          term: Database["public"]["Enums"]["term_type"]
+          term: Database["public"]["Enums"]["exam_term"]
           type: Database["public"]["Enums"]["exam_type"]
         }
         Insert: {
@@ -71,14 +71,14 @@ export type Database = {
           class: string
           created_at?: string
           created_by?: string | null
-          end_date: string
+          exam_date: string
           id?: string
+          is_visible?: boolean
           name: string
           pdf_file_path?: string | null
           section: string
-          start_date: string
           status?: Database["public"]["Enums"]["exam_status"]
-          term: Database["public"]["Enums"]["term_type"]
+          term: Database["public"]["Enums"]["exam_term"]
           type: Database["public"]["Enums"]["exam_type"]
         }
         Update: {
@@ -86,14 +86,14 @@ export type Database = {
           class?: string
           created_at?: string
           created_by?: string | null
-          end_date?: string
+          exam_date?: string
           id?: string
+          is_visible?: boolean
           name?: string
           pdf_file_path?: string | null
           section?: string
-          start_date?: string
           status?: Database["public"]["Enums"]["exam_status"]
-          term?: Database["public"]["Enums"]["term_type"]
+          term?: Database["public"]["Enums"]["exam_term"]
           type?: Database["public"]["Enums"]["exam_type"]
         }
         Relationships: [
@@ -510,7 +510,8 @@ export type Database = {
     }
     Enums: {
       exam_status: "upcoming" | "ongoing" | "completed" | "cancelled"
-      exam_type: "midterm" | "final" | "unit-test" | "assignment" | "practical"
+      exam_term: "first" | "second"
+      exam_type: "test" | "practical" | "full-examination"
       teacher_role: "teacher" | "head-teacher" | "admin"
       term_type: "first" | "second" | "third"
     }
@@ -641,7 +642,8 @@ export const Constants = {
   public: {
     Enums: {
       exam_status: ["upcoming", "ongoing", "completed", "cancelled"],
-      exam_type: ["midterm", "final", "unit-test", "assignment", "practical"],
+      exam_term: ["first", "second"],
+      exam_type: ["test", "practical", "full-examination"],
       teacher_role: ["teacher", "head-teacher", "admin"],
       term_type: ["first", "second", "third"],
     },

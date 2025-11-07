@@ -18,11 +18,11 @@ const examSchema = z.object({
   academic_year: z.string().min(1, 'Academic year is required'),
   class: z.string().min(1, 'Class is required'),
   section: z.string().min(1, 'Section is required'),
-  start_date: z.string().min(1, 'Start date is required'),
-  end_date: z.string().min(1, 'End date is required'),
-  term: z.enum(['first', 'second', 'third']),
-  type: z.enum(['midterm', 'final', 'unit-test', 'assignment', 'practical']),
-  status: z.enum(['upcoming', 'ongoing', 'completed', 'cancelled']).optional()
+  exam_date: z.string().min(1, 'Exam date is required'),
+  term: z.enum(['first', 'second']),
+  type: z.enum(['test', 'practical', 'full-examination']),
+  status: z.enum(['upcoming', 'ongoing', 'completed', 'cancelled']).optional(),
+  is_visible: z.boolean().optional()
 });
 
 type ExamFormData = z.infer<typeof examSchema>;
@@ -31,9 +31,10 @@ interface ExamFormProps {
   exam?: ExamWithSubjects;
   onSubmit: (data: ExamFormData & { subjects: { subject_id: string; max_marks: number }[]; pdfFile?: File }) => void;
   onCancel: () => void;
+  onDownloadPdf?: (pdfPath: string) => void;
 }
 
-export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
+export const ExamForm = ({ exam, onSubmit, onCancel, onDownloadPdf }: ExamFormProps) => {
   const { data: subjects = [] } = useSubjects();
   const { data: classesData } = useClassesSections();
   const [selectedSubjects, setSelectedSubjects] = useState<{ subject_id: string; max_marks: number }[]>([]);
@@ -47,13 +48,14 @@ export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
       academic_year: exam.academic_year,
       class: exam.class,
       section: exam.section,
-      start_date: exam.start_date,
-      end_date: exam.end_date,
+      exam_date: exam.exam_date,
       term: exam.term,
       type: exam.type,
-      status: exam.status
+      status: exam.status,
+      is_visible: exam.is_visible
     } : {
-      status: 'upcoming'
+      status: 'upcoming',
+      is_visible: true
     }
   });
 
@@ -133,6 +135,7 @@ export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
                 <SelectValue placeholder="Select section" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all">All Sections</SelectItem>
                 {classesData?.sections.map((sec) => (
                   <SelectItem key={sec} value={sec}>{sec}</SelectItem>
                 ))}
@@ -142,15 +145,9 @@ export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
           </div>
 
           <div>
-            <Label htmlFor="start_date">Start Date *</Label>
-            <Input id="start_date" type="date" {...register('start_date')} />
-            {errors.start_date && <p className="text-sm text-destructive mt-1">{errors.start_date.message}</p>}
-          </div>
-
-          <div>
-            <Label htmlFor="end_date">End Date *</Label>
-            <Input id="end_date" type="date" {...register('end_date')} />
-            {errors.end_date && <p className="text-sm text-destructive mt-1">{errors.end_date.message}</p>}
+            <Label htmlFor="exam_date">Exam Date *</Label>
+            <Input id="exam_date" type="date" {...register('exam_date')} />
+            {errors.exam_date && <p className="text-sm text-destructive mt-1">{errors.exam_date.message}</p>}
           </div>
 
           <div>
@@ -160,9 +157,8 @@ export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
                 <SelectValue placeholder="Select term" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="first">First Term</SelectItem>
-                <SelectItem value="second">Second Term</SelectItem>
-                <SelectItem value="third">Third Term</SelectItem>
+                <SelectItem value="first">1st Term</SelectItem>
+                <SelectItem value="second">2nd Term</SelectItem>
               </SelectContent>
             </Select>
             {errors.term && <p className="text-sm text-destructive mt-1">{errors.term.message}</p>}
@@ -175,11 +171,9 @@ export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="midterm">Midterm</SelectItem>
-                <SelectItem value="final">Final</SelectItem>
-                <SelectItem value="unit-test">Unit Test</SelectItem>
+                <SelectItem value="test">Test</SelectItem>
                 <SelectItem value="practical">Practical</SelectItem>
-                <SelectItem value="assignment">Assignment</SelectItem>
+                <SelectItem value="full-examination">Full Examination</SelectItem>
               </SelectContent>
             </Select>
             {errors.type && <p className="text-sm text-destructive mt-1">{errors.type.message}</p>}
@@ -200,9 +194,23 @@ export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
             </Select>
           </div>
 
+          <div>
+            <Label htmlFor="is_visible">Display on System</Label>
+            <div className="flex items-center gap-2 mt-2">
+              <Checkbox
+                id="is_visible"
+                checked={watch('is_visible') ?? true}
+                onCheckedChange={(checked) => setValue('is_visible', checked as boolean)}
+              />
+              <Label htmlFor="is_visible" className="text-sm font-normal cursor-pointer">
+                Make exam visible on the system
+              </Label>
+            </div>
+          </div>
+
           <div className="col-span-2">
             <Label htmlFor="pdf-upload">Exam Paper (PDF)</Label>
-            <div className="mt-2">
+            <div className="mt-2 space-y-3">
               <label 
                 htmlFor="pdf-upload" 
                 className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary transition-colors"
@@ -219,6 +227,16 @@ export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
                 onChange={handlePdfChange}
                 className="hidden"
               />
+              {exam?.pdf_file_path && onDownloadPdf && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onDownloadPdf(exam.pdf_file_path!)}
+                  className="w-full"
+                >
+                  Download Current PDF
+                </Button>
+              )}
             </div>
           </div>
         </div>

@@ -8,14 +8,14 @@ export interface Exam {
   academic_year: string;
   section: string;
   class: string;
-  start_date: string;
-  end_date: string;
-  term: 'first' | 'second' | 'third';
+  exam_date: string;
+  term: 'first' | 'second';
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-  type: 'midterm' | 'final' | 'unit-test' | 'assignment' | 'practical';
+  type: 'test' | 'practical' | 'full-examination';
   created_at: string;
   created_by?: string;
   pdf_file_path?: string;
+  is_visible: boolean;
 }
 
 export interface ExamWithSubjects extends Exam {
@@ -59,7 +59,7 @@ export const useExams = () => {
             )
           )
         `)
-        .order('start_date', { ascending: false });
+        .order('exam_date', { ascending: false });
 
       if (error) throw error;
       return data as ExamWithSubjects[];
@@ -76,11 +76,11 @@ export const useCreateExam = () => {
       academic_year: string;
       class: string;
       section: string;
-      start_date: string;
-      end_date: string;
-      term: 'first' | 'second' | 'third';
-      type: 'midterm' | 'final' | 'unit-test' | 'assignment' | 'practical';
+      exam_date: string;
+      term: 'first' | 'second';
+      type: 'test' | 'practical' | 'full-examination';
       status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+      is_visible?: boolean;
       subjects: { subject_id: string; max_marks: number }[];
       pdfFile?: File;
     }) => {

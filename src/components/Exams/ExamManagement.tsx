@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Filter, Search, Calendar, BookOpen, Edit, Trash2 } from 'lucide-react';
+import { Plus, Filter, Search, Calendar, BookOpen, Edit, Trash2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useExams, useCreateExam, useUpdateExam, useDeleteExam, type ExamWithSubjects } from '@/hooks/useExams';
 import { ExamForm } from './ExamForm';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 export const ExamManagement = () => {
   const { data: exams = [], isLoading } = useExams();
@@ -57,6 +59,37 @@ export const ExamManagement = () => {
         onSuccess: () => {
           setExamToDelete(null);
         }
+      });
+    }
+  };
+
+  const handleDownloadPdf = async (pdfPath: string) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('exam-pdfs')
+        .download(pdfPath);
+
+      if (error) throw error;
+
+      // Create a blob URL and trigger download
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = pdfPath.split('/').pop() || 'exam.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: 'Success',
+        description: 'PDF downloaded successfully'
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
       });
     }
   };
@@ -161,9 +194,8 @@ export const ExamManagement = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Terms</SelectItem>
-              <SelectItem value="first">First Term</SelectItem>
-              <SelectItem value="second">Second Term</SelectItem>
-              <SelectItem value="third">Third Term</SelectItem>
+              <SelectItem value="first">1st Term</SelectItem>
+              <SelectItem value="second">2nd Term</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -205,10 +237,10 @@ export const ExamManagement = () => {
               <div className="space-y-2 mb-4">
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Calendar className="w-4 h-4 mr-2" />
-                  {format(new Date(exam.start_date), 'MMM dd, yyyy')} - {format(new Date(exam.end_date), 'MMM dd, yyyy')}
+                  {format(new Date(exam.exam_date), 'MMM dd, yyyy')}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline">{exam.term.charAt(0).toUpperCase() + exam.term.slice(1)} Term</Badge>
+                  <Badge variant="outline">{exam.term === 'first' ? '1st' : '2nd'} Term</Badge>
                   <Badge variant="outline">{getTypeLabel(exam.type)}</Badge>
                 </div>
               </div>
@@ -241,6 +273,15 @@ export const ExamManagement = () => {
                   <Edit className="w-3 h-3 mr-1" />
                   Edit
                 </Button>
+                {exam.pdf_file_path && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownloadPdf(exam.pdf_file_path!)}
+                  >
+                    <Download className="w-3 h-3" />
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -265,6 +306,7 @@ export const ExamManagement = () => {
             exam={selectedExam || undefined}
             onSubmit={selectedExam ? handleUpdateExam : handleCreateExam}
             onCancel={closeDialog}
+            onDownloadPdf={handleDownloadPdf}
           />
         </DialogContent>
       </Dialog>

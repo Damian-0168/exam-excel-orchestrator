@@ -35,7 +35,12 @@ export const ExamManagement = () => {
   const handleUpdateExam = (data: any) => {
     if (selectedExam) {
       updateExamMutation.mutate(
-        { id: selectedExam.id, updates: data, subjects: data.subjects },
+        { 
+          id: selectedExam.id, 
+          updates: data, 
+          subjects: data.subjects,
+          pdfFile: data.pdfFile 
+        },
         {
           onSuccess: () => {
             setIsDialogOpen(false);

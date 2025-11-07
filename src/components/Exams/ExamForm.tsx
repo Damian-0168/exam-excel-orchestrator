@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { X } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { useSubjects } from '@/hooks/useSubjects';
+import { useClassesSections } from '@/hooks/useClassesSections';
 import type { ExamWithSubjects } from '@/hooks/useExams';
 
 const examSchema = z.object({
@@ -28,13 +29,16 @@ type ExamFormData = z.infer<typeof examSchema>;
 
 interface ExamFormProps {
   exam?: ExamWithSubjects;
-  onSubmit: (data: ExamFormData & { subjects: { subject_id: string; max_marks: number }[] }) => void;
+  onSubmit: (data: ExamFormData & { subjects: { subject_id: string; max_marks: number }[]; pdfFile?: File }) => void;
   onCancel: () => void;
 }
 
 export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
   const { data: subjects = [] } = useSubjects();
+  const { data: classesData } = useClassesSections();
   const [selectedSubjects, setSelectedSubjects] = useState<{ subject_id: string; max_marks: number }[]>([]);
+  const [pdfFile, setPdfFile] = useState<File | undefined>();
+  const [pdfFileName, setPdfFileName] = useState<string | undefined>(exam?.pdf_file_path);
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<ExamFormData>({
     resolver: zodResolver(examSchema),
@@ -78,8 +82,16 @@ export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
     ));
   };
 
+  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      setPdfFile(file);
+      setPdfFileName(file.name);
+    }
+  };
+
   const onFormSubmit = (data: ExamFormData) => {
-    onSubmit({ ...data, subjects: selectedSubjects });
+    onSubmit({ ...data, subjects: selectedSubjects, pdfFile });
   };
 
   return (
@@ -101,13 +113,31 @@ export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
 
           <div>
             <Label htmlFor="class">Class *</Label>
-            <Input id="class" {...register('class')} placeholder="e.g., 10" />
+            <Select onValueChange={(value) => setValue('class', value)} defaultValue={exam?.class}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select class" />
+              </SelectTrigger>
+              <SelectContent>
+                {classesData?.classes.map((cls) => (
+                  <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.class && <p className="text-sm text-destructive mt-1">{errors.class.message}</p>}
           </div>
 
           <div>
             <Label htmlFor="section">Section *</Label>
-            <Input id="section" {...register('section')} placeholder="e.g., A" />
+            <Select onValueChange={(value) => setValue('section', value)} defaultValue={exam?.section}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select section" />
+              </SelectTrigger>
+              <SelectContent>
+                {classesData?.sections.map((sec) => (
+                  <SelectItem key={sec} value={sec}>{sec}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {errors.section && <p className="text-sm text-destructive mt-1">{errors.section.message}</p>}
           </div>
 
@@ -155,22 +185,42 @@ export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
             {errors.type && <p className="text-sm text-destructive mt-1">{errors.type.message}</p>}
           </div>
 
-          {exam && (
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Select onValueChange={(value) => setValue('status', value as any)} defaultValue={exam.status}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="upcoming">Upcoming</SelectItem>
-                  <SelectItem value="ongoing">Ongoing</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="cancelled">Cancelled</SelectItem>
-                </SelectContent>
-              </Select>
+          <div>
+            <Label htmlFor="status">Status</Label>
+            <Select onValueChange={(value) => setValue('status', value as any)} defaultValue={exam?.status || 'upcoming'}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="upcoming">Upcoming</SelectItem>
+                <SelectItem value="ongoing">Ongoing</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="col-span-2">
+            <Label htmlFor="pdf-upload">Exam Paper (PDF)</Label>
+            <div className="mt-2">
+              <label 
+                htmlFor="pdf-upload" 
+                className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary transition-colors"
+              >
+                <Upload className="w-5 h-5 mr-2" />
+                <span className="text-sm">
+                  {pdfFileName || 'Click to upload PDF file'}
+                </span>
+              </label>
+              <input
+                id="pdf-upload"
+                type="file"
+                accept="application/pdf"
+                onChange={handlePdfChange}
+                className="hidden"
+              />
             </div>
-          )}
+          </div>
         </div>
       </Card>
 

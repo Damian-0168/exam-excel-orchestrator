@@ -59,6 +59,7 @@ export type Database = {
           end_date: string
           id: string
           name: string
+          pdf_file_path: string | null
           section: string
           start_date: string
           status: Database["public"]["Enums"]["exam_status"]
@@ -73,6 +74,7 @@ export type Database = {
           end_date: string
           id?: string
           name: string
+          pdf_file_path?: string | null
           section: string
           start_date: string
           status?: Database["public"]["Enums"]["exam_status"]
@@ -87,6 +89,7 @@ export type Database = {
           end_date?: string
           id?: string
           name?: string
+          pdf_file_path?: string | null
           section?: string
           start_date?: string
           status?: Database["public"]["Enums"]["exam_status"]
@@ -499,10 +502,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_teacher_school_id: {
-        Args: { _teacher_id: string }
-        Returns: string
-      }
+      get_teacher_school_id: { Args: { _teacher_id: string }; Returns: string }
       teacher_can_access_student: {
         Args: { _student_id: string; _teacher_id: string }
         Returns: boolean

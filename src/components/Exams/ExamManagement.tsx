@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Filter, Search, Calendar, BookOpen, Edit, Trash2, Download } from 'lucide-react';
+import { Plus, Filter, Search, Calendar, BookOpen, Edit, Trash2, Download, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -9,6 +9,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useExams, useCreateExam, useUpdateExam, useDeleteExam, type ExamWithSubjects } from '@/hooks/useExams';
 import { ExamForm } from './ExamForm';
+import { PdfViewer } from './PdfViewer';
+import { ExamCardPreview } from './ExamCardPreview';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -25,6 +27,7 @@ export const ExamManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [termFilter, setTermFilter] = useState<string>('all');
+  const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null);
 
   const handleCreateExam = (data: any) => {
     createExamMutation.mutate(data, {
@@ -63,13 +66,53 @@ export const ExamManagement = () => {
     }
   };
 
-  const handleDownloadPdf = async (pdfPath: string) => {
+  const handleViewPdf = async (pdfPath: string, examName: string) => {
     try {
+      console.log('Attempting to view PDF:', pdfPath);
+      
       const { data, error } = await supabase.storage
         .from('exam-pdfs')
         .download(pdfPath);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage download error:', error);
+        throw new Error(error.message || 'Failed to download PDF');
+      }
+
+      if (!data) {
+        throw new Error('No PDF data received from storage');
+      }
+
+      const url = URL.createObjectURL(data);
+      setViewingPdf({ url, name: examName });
+      
+      console.log('PDF loaded successfully');
+    } catch (error: any) {
+      console.error('Error viewing PDF:', error);
+      toast({
+        title: 'Failed to Load PDF',
+        description: error.message || 'Could not load the exam file. Please check if the file exists and try again.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleDownloadPdf = async (pdfPath: string) => {
+    try {
+      console.log('Attempting to download PDF:', pdfPath);
+      
+      const { data, error } = await supabase.storage
+        .from('exam-pdfs')
+        .download(pdfPath);
+
+      if (error) {
+        console.error('Storage download error:', error);
+        throw new Error(error.message || 'Failed to download PDF');
+      }
+
+      if (!data) {
+        throw new Error('No PDF data received from storage');
+      }
 
       // Create a blob URL and trigger download
       const url = URL.createObjectURL(data);
@@ -86,11 +129,19 @@ export const ExamManagement = () => {
         description: 'PDF downloaded successfully'
       });
     } catch (error: any) {
+      console.error('Error downloading PDF:', error);
       toast({
-        title: 'Error',
-        description: error.message,
+        title: 'Failed to Download PDF',
+        description: error.message || 'Could not download the exam file. Please try again.',
         variant: 'destructive'
       });
+    }
+  };
+
+  const handleClosePdfViewer = () => {
+    if (viewingPdf) {
+      URL.revokeObjectURL(viewingPdf.url);
+      setViewingPdf(null);
     }
   };
 
@@ -263,6 +314,13 @@ export const ExamManagement = () => {
                 </div>
               )}
 
+              {exam.pdf_file_path && (
+                <div className="mb-4">
+                  <p className="text-sm font-medium mb-2">Exam Preview</p>
+                  <ExamCardPreview pdfPath={exam.pdf_file_path} examName={exam.name} />
+                </div>
+              )}
+
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -274,13 +332,24 @@ export const ExamManagement = () => {
                   Edit
                 </Button>
                 {exam.pdf_file_path && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDownloadPdf(exam.pdf_file_path!)}
-                  >
-                    <Download className="w-3 h-3" />
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewPdf(exam.pdf_file_path!, exam.name)}
+                      title="View PDF"
+                    >
+                      <Eye className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDownloadPdf(exam.pdf_file_path!)}
+                      title="Download PDF"
+                    >
+                      <Download className="w-3 h-3" />
+                    </Button>
+                  </>
                 )}
                 <Button
                   variant="outline"
@@ -328,6 +397,24 @@ export const ExamManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* PDF Viewer */}
+      {viewingPdf && (
+        <PdfViewer
+          fileUrl={viewingPdf.url}
+          fileName={viewingPdf.name}
+          isOpen={true}
+          onClose={handleClosePdfViewer}
+          onDownload={() => {
+            const a = document.createElement('a');
+            a.href = viewingPdf.url;
+            a.download = viewingPdf.name + '.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          }}
+        />
+      )}
     </div>
   );
 };

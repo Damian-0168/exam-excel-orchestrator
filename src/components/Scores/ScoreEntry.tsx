@@ -114,7 +114,7 @@ export const ScoreEntry = () => {
 
   const handleMarksChange = (studentId: string, marks: string) => {
     const numMarks = marks === '' ? '' : Number(marks);
-    const maxMarks = selectedSubject?.maxMarks || 100;
+    const maxMarks = selectedSubject?.max_marks || 100;
 
     if (numMarks !== '' && (numMarks < 0 || numMarks > maxMarks)) {
       toast({
@@ -154,7 +154,7 @@ export const ScoreEntry = () => {
       return;
     }
 
-    const maxMarks = selectedSubject?.maxMarks || 100;
+    const maxMarks = selectedSubject?.max_marks || 100;
     const scoresToSave = Array.from(scoresData.values()).filter(
       data => data.marksObtained !== ''
     );
@@ -291,7 +291,7 @@ export const ScoreEntry = () => {
                 <SelectContent>
                   {subjects?.map(subject => (
                     <SelectItem key={subject.id} value={subject.id}>
-                      {subject.name} (Max: {subject.maxMarks})
+                      {subject.name} (Max: {subject.max_marks})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -317,7 +317,7 @@ export const ScoreEntry = () => {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-sm text-muted-foreground">Max Marks</div>
-                  <div className="text-2xl font-bold">{selectedSubject.maxMarks}</div>
+                  <div className="text-2xl font-bold">{selectedSubject.max_marks}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -364,7 +364,7 @@ export const ScoreEntry = () => {
                             <Input
                               type="number"
                               min="0"
-                              max={selectedSubject?.maxMarks || 100}
+                              max={selectedSubject?.max_marks || 100}
                               value={scoreData?.marksObtained ?? ''}
                               onChange={(e) => handleMarksChange(student.id, e.target.value)}
                               placeholder="Enter marks"
@@ -385,7 +385,7 @@ export const ScoreEntry = () => {
                             ) : scoreData?.marksObtained !== '' ? (
                               <Badge variant="outline">New</Badge>
                             ) : (
-                              <Badge variant="ghost">Pending</Badge>
+                              <Badge variant="secondary">Pending</Badge>
                             )}
                           </TableCell>
                         </TableRow>

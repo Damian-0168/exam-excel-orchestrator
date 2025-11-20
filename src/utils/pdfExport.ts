@@ -1,4 +1,4 @@
-"import { StudentReport, ClassReport } from '@/types';
+import { StudentReport, ClassReport } from '@/types';
 
 // Simple PDF export using browser print
 export const exportStudentReportPDF = async (report: StudentReport) => {
@@ -450,4 +450,3 @@ export const exportClassReportPDF = async (report: ClassReport) => {
     }, 250);
   };
 };
-"

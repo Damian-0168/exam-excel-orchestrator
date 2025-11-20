@@ -1,7 +1,23 @@
 
 import { GradeScale, GradeRange, Score, Subject } from '@/types';
 
-export const calculateGrade = (percentage: number, gradeScale: GradeScale): { grade: string; gpa: number; description: string } => {
+// Default grade scale for calculations
+const defaultGradeScale: GradeScale = {
+  id: 'default',
+  name: 'Standard Grading Scale',
+  grades: [
+    { grade: 'A+', minPercentage: 90, maxPercentage: 100, gpa: 4.0, description: 'Outstanding' },
+    { grade: 'A', minPercentage: 80, maxPercentage: 89, gpa: 3.7, description: 'Excellent' },
+    { grade: 'B+', minPercentage: 70, maxPercentage: 79, gpa: 3.3, description: 'Very Good' },
+    { grade: 'B', minPercentage: 60, maxPercentage: 69, gpa: 3.0, description: 'Good' },
+    { grade: 'C+', minPercentage: 50, maxPercentage: 59, gpa: 2.7, description: 'Satisfactory' },
+    { grade: 'C', minPercentage: 40, maxPercentage: 49, gpa: 2.0, description: 'Pass' },
+    { grade: 'F', minPercentage: 0, maxPercentage: 39, gpa: 0, description: 'Fail' }
+  ],
+  isDefault: true
+};
+
+export const calculateGrade = (percentage: number, gradeScale: GradeScale = defaultGradeScale): { grade: string; gpa: number; description: string } => {
   const gradeRange = gradeScale.grades.find(range => 
     percentage >= range.minPercentage && percentage <= range.maxPercentage
   );
@@ -51,7 +67,7 @@ export const determinePassStatus = (scores: Score[], subjects: Subject[]): boole
     if (!subject) return false;
     
     const percentage = calculatePercentage(score.marksObtained, score.maxMarks);
-    const passingPercentage = (subject.passingMarks / subject.maxMarks) * 100;
+    const passingPercentage = (subject.passing_marks / subject.max_marks) * 100;
     
     return percentage >= passingPercentage;
   });

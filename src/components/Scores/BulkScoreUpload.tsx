@@ -44,7 +44,7 @@ export const BulkScoreUpload: React.FC<BulkScoreUploadProps> = ({
   const bulkCreateScores = useBulkCreateScores();
 
   const selectedSubject = subjects?.find(s => s.id === subjectId);
-  const maxMarks = selectedSubject?.maxMarks || 100;
+  const maxMarks = selectedSubject?.max_marks || 100;
 
   const downloadTemplate = () => {
     // Create template data
@@ -303,12 +303,12 @@ export const BulkScoreUpload: React.FC<BulkScoreUploadProps> = ({
               </p>
             </div>
             <div className="flex gap-2">
-              <Input
+              <input
                 ref={fileInputRef}
                 type="file"
                 accept=".xlsx,.xls"
                 onChange={handleFileUpload}
-                className="flex-1"
+                className="flex-1 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
               {parsedScores.length > 0 && (
                 <Button onClick={handleReset} variant="outline">

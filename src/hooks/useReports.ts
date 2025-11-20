@@ -107,8 +107,8 @@ export const useStudentReport = (studentId: string, examId: string) => {
             id: s.subjects.id,
             name: s.subjects.name,
             code: s.subjects.code,
-            maxMarks: s.subjects.max_marks,
-            passingMarks: s.subjects.passing_marks,
+            max_marks: s.subjects.max_marks,
+            passing_marks: s.subjects.passing_marks,
             description: s.subjects.description || '',
             createdAt: s.subjects.created_at
           }
@@ -222,8 +222,8 @@ export const useClassReport = (examId: string, className: string, section: strin
               id: s.subjects.id,
               name: s.subjects.name,
               code: s.subjects.code,
-              maxMarks: s.subjects.max_marks,
-              passingMarks: s.subjects.passing_marks,
+              max_marks: s.subjects.max_marks,
+              passing_marks: s.subjects.passing_marks,
               description: s.subjects.description || '',
               createdAt: s.subjects.created_at
             }
@@ -278,8 +278,8 @@ export const useClassReport = (examId: string, className: string, section: strin
             id: data.subject.id,
             name: data.subject.name,
             code: data.subject.code,
-            maxMarks: data.subject.max_marks,
-            passingMarks: data.subject.passing_marks,
+            max_marks: data.subject.max_marks,
+            passing_marks: data.subject.passing_marks,
             description: data.subject.description || '',
             createdAt: data.subject.created_at
           },

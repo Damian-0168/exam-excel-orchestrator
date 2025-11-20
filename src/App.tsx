@@ -9,9 +9,9 @@ import { TeacherAuth } from "./components/Auth/TeacherAuth";
 import { DashboardLayout } from "./components/Layout/DashboardLayout";
 import { Dashboard } from "./components/Dashboard/Dashboard";
 import { StudentManagement } from "./components/Students/StudentManagement";
-import { ScoreEntry } from \"./components/Scores/ScoreEntry\";
-import { ReportGeneration } from \"./components/Reports/ReportGeneration\";
-import { Settings } from \"./components/Settings/Settings\";
+import { ScoreEntry } from "./components/Scores/ScoreEntry";
+import { ReportGeneration } from "./components/Reports/ReportGeneration";
+import { Settings } from "./components/Settings/Settings";
 import { ExamManagement } from "./components/Exams/ExamManagement";
 import NotFound from "./pages/NotFound";
 
@@ -38,12 +38,9 @@ const AppContent = () => {
         <Route index element={<Dashboard />} />
         <Route path="students" element={<StudentManagement />} />
         <Route path="exams" element={<ExamManagement />} />
-        <Route path="scores" element={<div className="p-8 text-center text-gray-500">Score Entry - Coming Soon</div>} />
-        <Route path="reports" element={<div className="p-8 text-center text-gray-500">Reports - Coming Soon</div>} />
-         <Route path=\"scores\" element={<ScoreEntry />} />
-        <Route path=\"reports\" element={<ReportGeneration />} />
-        <Route path=\"settings\" element={<Settings />} />
-        <Route path="settings" element={<div className="p-8 text-center text-gray-500">Settings - Coming Soon</div>} />
+        <Route path="scores" element={<ScoreEntry />} />
+        <Route path="reports" element={<ReportGeneration />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -17,8 +17,8 @@ export interface Subject {
   id: string;
   name: string;
   code: string;
-  maxMarks: number;
-  passingMarks: number;
+  max_marks: number;
+  passing_marks: number;
   description?: string;
   createdAt: string;
 }
@@ -26,14 +26,14 @@ export interface Subject {
 export interface Exam {
   id: string;
   name: string;
-  type: 'midterm' | 'final' | 'unit-test' | 'assignment' | 'practical';
+  type: 'test' | 'practical' | 'full-examination';
   class: string;
   section: string;
   subjects: string[]; // subject IDs
   startDate: string;
   endDate: string;
   academicYear: string;
-  term: 'first' | 'second' | 'third';
+  term: 'first' | 'second';
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
   createdAt: string;
 }

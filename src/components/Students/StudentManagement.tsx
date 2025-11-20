@@ -208,9 +208,9 @@ export const StudentManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="h-[calc(100vh-8rem)] flex flex-col space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-shrink-0">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Student Management</h1>
           <p className="text-gray-600">Manage your student records and information</p>
@@ -236,7 +236,7 @@ export const StudentManagement = () => {
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="flex-shrink-0">
         <CardContent className="p-6">
           <div className="space-y-4">
             <div className="flex flex-col md:flex-row gap-4">
@@ -285,7 +285,7 @@ export const StudentManagement = () => {
 
       {/* Loading State */}
       {isLoading && (
-        <Card>
+        <Card className="flex-shrink-0">
           <CardContent className="p-12 text-center">
             <div className="text-gray-500">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-educational-blue mx-auto mb-4"></div>
@@ -295,12 +295,12 @@ export const StudentManagement = () => {
         </Card>
       )}
 
-      {/* Students Table */}
+      {/* Students Table with Independent Scrolling */}
       {!isLoading && filteredStudents.length > 0 && (
-        <Card>
-          <CardContent className="p-0">
+        <Card className="flex-1 overflow-hidden flex flex-col">
+          <div className="overflow-auto flex-1">
             <Table>
-              <TableHeader>
+              <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
                   <TableHead>Roll Number</TableHead>
                   <TableHead>Name</TableHead>
@@ -370,12 +370,12 @@ export const StudentManagement = () => {
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
+          </div>
         </Card>
       )}
 
       {!isLoading && filteredStudents.length === 0 && (
-        <Card>
+        <Card className="flex-shrink-0">
           <CardContent className="p-12 text-center">
             <div className="text-gray-500">
               <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />

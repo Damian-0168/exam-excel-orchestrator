@@ -12,7 +12,9 @@ import {
   Menu,
   Bell,
   Search,
-  User
+  User,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,57 +46,78 @@ export const DashboardLayout = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white shadow-sm border-r border-gray-200 transition-all duration-300 flex flex-col`}>
-        {/* Logo */}
+      <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-sm border-r border-gray-200 transition-all duration-300 flex flex-col`}>
+        {/* Logo and Toggle */}
         <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center">
-            <div className="w-8 h-8 bg-educational-blue rounded-lg flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-white" />
-            </div>
-            {sidebarOpen && (
-              <div className="ml-3">
-                <h1 className="text-lg font-semibold text-gray-900">School Management</h1>
-                <p className="text-sm text-gray-500">Teacher Portal</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-educational-blue rounded-lg flex items-center justify-center">
+                <BookOpen className="w-5 h-5 text-white" />
               </div>
-            )}
+              {sidebarOpen && (
+                <div className="ml-3">
+                  <h1 className="text-lg font-semibold text-gray-900">School Management</h1>
+                  <p className="text-sm text-gray-500">Teacher Portal</p>
+                </div>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="hover:bg-gray-100"
+            >
+              {sidebarOpen ? (
+                <ChevronLeft className="w-5 h-5" />
+              ) : (
+                <ChevronRight className="w-5 h-5" />
+              )}
+            </Button>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-3 space-y-1">
           {navigation.map((item) => (
             <Link
               key={item.name}
               to={item.href}
-              className={`flex items-center px-3 py-2 rounded-lg transition-colors ${
+              className={`flex items-center ${sidebarOpen ? 'px-3' : 'px-2 justify-center'} py-3 rounded-lg transition-colors ${
                 isActive(item.href)
                   ? 'bg-educational-blue text-white'
                   : 'text-gray-700 hover:bg-gray-100'
               }`}
+              title={!sidebarOpen ? item.name : undefined}
             >
-              <item.icon className={`w-5 h-5 ${sidebarOpen ? 'mr-3' : ''}`} />
+              <item.icon className={`${sidebarOpen ? 'w-5 h-5 mr-3' : 'w-6 h-6'}`} />
               {sidebarOpen && <span className="font-medium">{item.name}</span>}
             </Link>
           ))}
         </nav>
 
         {/* Teacher Profile */}
-        {sidebarOpen && currentTeacher && (
-          <div className="p-4 border-t border-gray-200">
+        <div className="p-3 border-t border-gray-200 mt-auto">
+          {sidebarOpen && currentTeacher ? (
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-educational-green rounded-full flex items-center justify-center">
+              <div className="w-10 h-10 bg-educational-green rounded-full flex items-center justify-center shrink-0">
                 <User className="w-5 h-5 text-white" />
               </div>
-              <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-900">{currentTeacher.name}</p>
-                <p className="text-xs text-gray-500">{currentTeacher.department}</p>
+              <div className="ml-3 flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{currentTeacher.name}</p>
+                <p className="text-xs text-gray-500 truncate">{currentTeacher.department}</p>
               </div>
-              <Button variant="ghost" size="sm" onClick={signOut}>
+              <Button variant="ghost" size="sm" onClick={signOut} className="shrink-0">
                 <LogOut className="w-4 h-4" />
               </Button>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="flex justify-center">
+              <Button variant="ghost" size="sm" onClick={signOut} title="Logout">
+                <LogOut className="w-6 h-6" />
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Main Content */}
@@ -103,15 +126,6 @@ export const DashboardLayout = () => {
         <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="mr-4"
-              >
-                <Menu className="w-5 h-5" />
-              </Button>
-              
               <div className="relative">
                 <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <Input

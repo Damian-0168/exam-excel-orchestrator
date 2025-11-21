@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      exam_events: {
+        Row: {
+          academic_year: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          status: Database["public"]["Enums"]["exam_status"] | null
+          term: Database["public"]["Enums"]["exam_term"]
+          updated_at: string | null
+        }
+        Insert: {
+          academic_year: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date: string
+          id?: string
+          name: string
+          start_date: string
+          status?: Database["public"]["Enums"]["exam_status"] | null
+          term: Database["public"]["Enums"]["exam_term"]
+          updated_at?: string | null
+        }
+        Update: {
+          academic_year?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string
+          id?: string
+          name?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["exam_status"] | null
+          term?: Database["public"]["Enums"]["exam_term"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       exam_subjects: {
         Row: {
           exam_id: string
@@ -57,12 +99,14 @@ export type Database = {
           created_at: string
           created_by: string | null
           exam_date: string
+          exam_event_id: string | null
           id: string
           is_visible: boolean
           name: string
           pdf_file_path: string | null
           section: string
           status: Database["public"]["Enums"]["exam_status"]
+          teacher_id: string | null
           term: Database["public"]["Enums"]["exam_term"]
           type: Database["public"]["Enums"]["exam_type"]
         }
@@ -72,12 +116,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           exam_date: string
+          exam_event_id?: string | null
           id?: string
           is_visible?: boolean
           name: string
           pdf_file_path?: string | null
           section: string
           status?: Database["public"]["Enums"]["exam_status"]
+          teacher_id?: string | null
           term: Database["public"]["Enums"]["exam_term"]
           type: Database["public"]["Enums"]["exam_type"]
         }
@@ -87,12 +133,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           exam_date?: string
+          exam_event_id?: string | null
           id?: string
           is_visible?: boolean
           name?: string
           pdf_file_path?: string | null
           section?: string
           status?: Database["public"]["Enums"]["exam_status"]
+          teacher_id?: string | null
           term?: Database["public"]["Enums"]["exam_term"]
           type?: Database["public"]["Enums"]["exam_type"]
         }
@@ -102,6 +150,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exams_exam_event_id_fkey"
+            columns: ["exam_event_id"]
+            isOneToOne: false
+            referencedRelation: "exam_events"
             referencedColumns: ["id"]
           },
         ]
@@ -497,18 +552,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       get_teacher_school_id: { Args: { _teacher_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       teacher_can_access_student: {
         Args: { _student_id: string; _teacher_id: string }
         Returns: boolean
       }
     }
     Enums: {
+      app_role: "admin" | "teacher"
       exam_status: "upcoming" | "ongoing" | "completed" | "cancelled"
       exam_term: "first" | "second"
       exam_type: "test" | "practical" | "full-examination"
@@ -641,6 +725,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "teacher"],
       exam_status: ["upcoming", "ongoing", "completed", "cancelled"],
       exam_term: ["first", "second"],
       exam_type: ["test", "practical", "full-examination"],

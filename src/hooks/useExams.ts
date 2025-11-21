@@ -59,6 +59,7 @@ export const useExams = () => {
             )
           )
         `)
+        .is('exam_event_id', null)  // Only standalone exams (tests & practicals)
         .order('exam_date', { ascending: false });
 
       if (error) throw error;
@@ -83,11 +84,12 @@ export const useCreateExam = () => {
       is_visible?: boolean;
       subjects: { subject_id: string; max_marks: number }[];
       pdfFile?: File;
+      exam_event_id?: string;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { subjects, status, pdfFile, ...examInfo } = examData;
+      const { subjects, status, pdfFile, exam_event_id, ...examInfo } = examData;
 
       let pdf_file_path: string | undefined;
 
@@ -107,7 +109,12 @@ export const useCreateExam = () => {
       // Insert exam - status defaults to 'upcoming' in database
       const { data: exam, error: examError } = await supabase
         .from('exams')
-        .insert({ ...examInfo, pdf_file_path })
+        .insert({ 
+          ...examInfo, 
+          pdf_file_path,
+          teacher_id: user.id,
+          exam_event_id: exam_event_id || null
+        })
         .select()
         .single();
 

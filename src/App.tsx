@@ -12,7 +12,9 @@ import { StudentManagement } from "./components/Students/StudentManagement";
 import { ScoreEntry } from "./components/Scores/ScoreEntry";
 import { ReportGeneration } from "./components/Reports/ReportGeneration";
 import { Settings } from "./components/Settings/Settings";
-import { ExamManagement } from "./components/Exams/ExamManagement";
+import { ExamEventManagement } from "./components/Exams/ExamEventManagement";
+import { ExamEventDetail } from "./components/Exams/ExamEventDetail";
+import { StandaloneExams } from "./components/Exams/StandaloneExams";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,7 +39,9 @@ const AppContent = () => {
       <Route path="/" element={<DashboardLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="students" element={<StudentManagement />} />
-        <Route path="exams" element={<ExamManagement />} />
+        <Route path="exams" element={<ExamEventManagement />} />
+        <Route path="exams/events/:id" element={<ExamEventDetail />} />
+        <Route path="exams/standalone" element={<StandaloneExams />} />
         <Route path="scores" element={<ScoreEntry />} />
         <Route path="reports" element={<ReportGeneration />} />
         <Route path="settings" element={<Settings />} />

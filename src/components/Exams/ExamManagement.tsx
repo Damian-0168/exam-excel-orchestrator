@@ -43,8 +43,7 @@ export const ExamManagement = () => {
         { 
           id: selectedExam.id, 
           updates: data, 
-          subjects: data.subjects,
-          pdfFile: data.pdfFile 
+          subjects: data.subjects
         },
         {
           onSuccess: () => {
@@ -375,7 +374,6 @@ export const ExamManagement = () => {
             exam={selectedExam || undefined}
             onSubmit={selectedExam ? handleUpdateExam : handleCreateExam}
             onCancel={closeDialog}
-            onDownloadPdf={handleDownloadPdf}
           />
         </DialogContent>
       </Dialog>

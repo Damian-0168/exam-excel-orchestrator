@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Download, Eye, Edit, Trash2, Calendar, User } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Calendar, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,8 +9,7 @@ import { useExamEvent } from '@/hooks/useExamEvents';
 import { useIsAdmin } from '@/hooks/useUserRole';
 import { useCreateExam, useUpdateExam, useDeleteExam } from '@/hooks/useExams';
 import { ExamForm } from './ExamForm';
-import { PdfViewer } from './PdfViewer';
-import { ExamCardPreview } from './ExamCardPreview';
+import { SubjectPdfManager } from './SubjectPdfManager';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -27,14 +26,15 @@ export const ExamEventDetail = () => {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedExam, setSelectedExam] = useState<any>(null);
-  const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null);
   const [examToDelete, setExamToDelete] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   // Get current user ID
-  supabase.auth.getUser().then(({ data: { user } }) => {
-    if (user && !currentUserId) setCurrentUserId(user.id);
-  });
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserId(user.id);
+    });
+  }, []);
 
   const handleCreateExam = (data: any) => {
     createExamMutation.mutate(
@@ -53,8 +53,7 @@ export const ExamEventDetail = () => {
         {
           id: selectedExam.id,
           updates: data,
-          subjects: data.subjects,
-          pdfFile: data.pdfFile
+          subjects: data.subjects
         },
         {
           onSuccess: () => {
@@ -72,57 +71,6 @@ export const ExamEventDetail = () => {
         onSuccess: () => {
           setExamToDelete(null);
         }
-      });
-    }
-  };
-
-  const handleViewPdf = async (pdfPath: string, examName: string) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from('exam-pdfs')
-        .download(pdfPath);
-
-      if (error) throw error;
-      if (!data) throw new Error('No PDF data received');
-
-      const url = URL.createObjectURL(data);
-      setViewingPdf({ url, name: examName });
-    } catch (error: any) {
-      toast({
-        title: 'Failed to Load PDF',
-        description: error.message || 'Could not load the exam file.',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const handleDownloadPdf = async (pdfPath: string) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from('exam-pdfs')
-        .download(pdfPath);
-
-      if (error) throw error;
-      if (!data) throw new Error('No PDF data received');
-
-      const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = pdfPath.split('/').pop() || 'exam.pdf';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast({
-        title: 'Success',
-        description: 'PDF downloaded successfully'
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Failed to Download PDF',
-        description: error.message || 'Could not download the exam file.',
-        variant: 'destructive'
       });
     }
   };
@@ -235,25 +183,19 @@ export const ExamEventDetail = () => {
                   {format(new Date(exam.exam_date), 'MMM dd, yyyy')}
                 </div>
 
-                {/* Subjects */}
+                {/* Subject Exam Papers */}
                 {exam.exam_subjects && exam.exam_subjects.length > 0 && (
-                  <div>
-                    <p className="text-sm font-medium mb-2">Subjects</p>
-                    <div className="flex flex-wrap gap-1">
-                      {exam.exam_subjects.map((es) => (
-                        <Badge key={es.id} variant="secondary" className="text-xs">
-                          {es.subjects.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* PDF Preview */}
-                {exam.pdf_file_path && (
-                  <div>
-                    <p className="text-sm font-medium mb-2">Exam Preview</p>
-                    <ExamCardPreview pdfPath={exam.pdf_file_path} examName={exam.name} />
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">Subject Exam Papers</p>
+                    {exam.exam_subjects.map((es: any) => (
+                      <SubjectPdfManager
+                        key={es.id}
+                        examSubjectId={es.id}
+                        subjectName={es.subjects.name}
+                        pdfPath={es.pdf_file_path}
+                        canEdit={canEditExam(exam)}
+                      />
+                    ))}
                   </div>
                 )}
 
@@ -261,52 +203,32 @@ export const ExamEventDetail = () => {
                 {isAdmin && exam.teacher_id && (
                   <div className="flex items-center text-sm text-muted-foreground">
                     <User className="w-4 h-4 mr-2" />
-                    <span>Uploaded by teacher</span>
+                    <span>Created by teacher</span>
                   </div>
                 )}
 
                 {/* Actions */}
                 <div className="flex gap-2">
                   {canEditExam(exam) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => { setSelectedExam(exam); setIsDialogOpen(true); }}
-                    >
-                      <Edit className="w-3 h-3 mr-1" />
-                      Edit
-                    </Button>
-                  )}
-                  {exam.pdf_file_path && (
                     <>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleViewPdf(exam.pdf_file_path!, exam.name)}
-                        title="View PDF"
+                        className="flex-1"
+                        onClick={() => { setSelectedExam(exam); setIsDialogOpen(true); }}
                       >
-                        <Eye className="w-3 h-3" />
+                        <Edit className="w-3 h-3 mr-1" />
+                        Edit
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDownloadPdf(exam.pdf_file_path!)}
-                        title="Download PDF"
+                        onClick={() => setExamToDelete(exam.id)}
+                        className="text-destructive hover:text-destructive"
                       >
-                        <Download className="w-3 h-3" />
+                        <Trash2 className="w-3 h-3" />
                       </Button>
                     </>
-                  )}
-                  {canEditExam(exam) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setExamToDelete(exam.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
                   )}
                 </div>
               </div>
@@ -325,7 +247,6 @@ export const ExamEventDetail = () => {
             exam={selectedExam || undefined}
             onSubmit={selectedExam ? handleUpdateExam : handleCreateExam}
             onCancel={() => { setIsDialogOpen(false); setSelectedExam(null); }}
-            onDownloadPdf={handleDownloadPdf}
           />
         </DialogContent>
       </Dialog>
@@ -347,29 +268,6 @@ export const ExamEventDetail = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* PDF Viewer */}
-      {viewingPdf && (
-        <PdfViewer
-          fileUrl={viewingPdf.url}
-          fileName={viewingPdf.name}
-          isOpen={true}
-          onClose={() => {
-            if (viewingPdf) {
-              URL.revokeObjectURL(viewingPdf.url);
-              setViewingPdf(null);
-            }
-          }}
-          onDownload={() => {
-            const a = document.createElement('a');
-            a.href = viewingPdf.url;
-            a.download = viewingPdf.name + '.pdf';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-          }}
-        />
-      )}
     </div>
   );
 };

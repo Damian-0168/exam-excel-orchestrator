@@ -61,18 +61,21 @@ export type Database = {
           exam_id: string
           id: string
           max_marks: number
+          pdf_file_path: string | null
           subject_id: string
         }
         Insert: {
           exam_id: string
           id?: string
           max_marks?: number
+          pdf_file_path?: string | null
           subject_id: string
         }
         Update: {
           exam_id?: string
           id?: string
           max_marks?: number
+          pdf_file_path?: string | null
           subject_id?: string
         }
         Relationships: [

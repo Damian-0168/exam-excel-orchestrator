@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Upload } from 'lucide-react';
+
 import { useSubjects } from '@/hooks/useSubjects';
 import { useClassesSections } from '@/hooks/useClassesSections';
 import type { ExamWithSubjects } from '@/hooks/useExams';
@@ -29,17 +29,14 @@ type ExamFormData = z.infer<typeof examSchema>;
 
 interface ExamFormProps {
   exam?: ExamWithSubjects;
-  onSubmit: (data: ExamFormData & { subjects: { subject_id: string; max_marks: number }[]; pdfFile?: File }) => void;
+  onSubmit: (data: ExamFormData & { subjects: { subject_id: string; max_marks: number }[] }) => void;
   onCancel: () => void;
-  onDownloadPdf?: (pdfPath: string) => void;
 }
 
-export const ExamForm = ({ exam, onSubmit, onCancel, onDownloadPdf }: ExamFormProps) => {
+export const ExamForm = ({ exam, onSubmit, onCancel }: ExamFormProps) => {
   const { data: subjects = [] } = useSubjects();
   const { data: classesData } = useClassesSections();
   const [selectedSubjects, setSelectedSubjects] = useState<{ subject_id: string; max_marks: number }[]>([]);
-  const [pdfFile, setPdfFile] = useState<File | undefined>();
-  const [pdfFileName, setPdfFileName] = useState<string | undefined>(exam?.pdf_file_path);
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<ExamFormData>({
     resolver: zodResolver(examSchema),
@@ -84,16 +81,8 @@ export const ExamForm = ({ exam, onSubmit, onCancel, onDownloadPdf }: ExamFormPr
     ));
   };
 
-  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      setPdfFile(file);
-      setPdfFileName(file.name);
-    }
-  };
-
   const onFormSubmit = (data: ExamFormData) => {
-    onSubmit({ ...data, subjects: selectedSubjects, pdfFile });
+    onSubmit({ ...data, subjects: selectedSubjects });
   };
 
   return (
@@ -205,38 +194,6 @@ export const ExamForm = ({ exam, onSubmit, onCancel, onDownloadPdf }: ExamFormPr
               <Label htmlFor="is_visible" className="text-sm font-normal cursor-pointer">
                 Make exam visible on the system
               </Label>
-            </div>
-          </div>
-
-          <div className="col-span-2">
-            <Label htmlFor="pdf-upload">Exam Paper (PDF)</Label>
-            <div className="mt-2 space-y-3">
-              <label 
-                htmlFor="pdf-upload" 
-                className="flex items-center justify-center w-full px-4 py-3 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary transition-colors"
-              >
-                <Upload className="w-5 h-5 mr-2" />
-                <span className="text-sm">
-                  {pdfFileName || 'Click to upload PDF file'}
-                </span>
-              </label>
-              <input
-                id="pdf-upload"
-                type="file"
-                accept="application/pdf"
-                onChange={handlePdfChange}
-                className="hidden"
-              />
-              {exam?.pdf_file_path && onDownloadPdf && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => onDownloadPdf(exam.pdf_file_path!)}
-                  className="w-full"
-                >
-                  Download Current PDF
-                </Button>
-              )}
             </div>
           </div>
         </div>

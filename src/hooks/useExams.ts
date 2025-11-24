@@ -23,6 +23,7 @@ export interface ExamWithSubjects extends Exam {
     id: string;
     subject_id: string;
     max_marks: number;
+    pdf_file_path?: string | null;
     subjects: {
       name: string;
       code: string;
@@ -83,35 +84,18 @@ export const useCreateExam = () => {
       status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
       is_visible?: boolean;
       subjects: { subject_id: string; max_marks: number }[];
-      pdfFile?: File;
       exam_event_id?: string;
     }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      const { subjects, status, pdfFile, exam_event_id, ...examInfo } = examData;
-
-      let pdf_file_path: string | undefined;
-
-      // Upload PDF if provided
-      if (pdfFile) {
-        const fileExt = pdfFile.name.split('.').pop();
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('exam-pdfs')
-          .upload(fileName, pdfFile);
-
-        if (uploadError) throw uploadError;
-        pdf_file_path = fileName;
-      }
+      const { subjects, exam_event_id, ...examInfo } = examData;
 
       // Insert exam - status defaults to 'upcoming' in database
       const { data: exam, error: examError } = await supabase
         .from('exams')
         .insert({ 
           ...examInfo, 
-          pdf_file_path,
           teacher_id: user.id,
           exam_event_id: exam_event_id || null
         })
@@ -161,42 +145,15 @@ export const useUpdateExam = () => {
     mutationFn: async ({ 
       id, 
       updates,
-      subjects,
-      pdfFile 
+      subjects
     }: { 
       id: string; 
       updates: Partial<Exam>;
       subjects?: { subject_id: string; max_marks: number }[];
-      pdfFile?: File;
     }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      let updatedData = { ...updates };
-
-      // Upload new PDF if provided
-      if (pdfFile) {
-        // Delete old PDF if exists
-        if (updates.pdf_file_path) {
-          await supabase.storage
-            .from('exam-pdfs')
-            .remove([updates.pdf_file_path]);
-        }
-
-        const fileExt = pdfFile.name.split('.').pop();
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('exam-pdfs')
-          .upload(fileName, pdfFile);
-
-        if (uploadError) throw uploadError;
-        updatedData.pdf_file_path = fileName;
-      }
-
       const { error: examError } = await supabase
         .from('exams')
-        .update(updatedData)
+        .update(updates)
         .eq('id', id);
 
       if (examError) throw examError;

@@ -57,6 +57,7 @@ export const useExamEvents = () => {
               id,
               subject_id,
               max_marks,
+              pdf_file_path,
               subjects (
                 name,
                 code
@@ -94,6 +95,7 @@ export const useExamEvent = (id: string) => {
               id,
               subject_id,
               max_marks,
+              pdf_file_path,
               subjects (
                 name,
                 code

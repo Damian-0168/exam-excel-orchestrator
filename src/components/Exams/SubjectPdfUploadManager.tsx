@@ -1,118 +1,92 @@
-import { useState } from 'react';
-import { Upload, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { useUploadSubjectPdf, useDeleteSubjectPdf } from '@/hooks/useExamSubjectPdf';
-import { toast } from '@/hooks/use-toast';
+import { CardHeader, CardTitle } from '@/components/ui/card';
+import { SubjectPdfManager } from './SubjectPdfManager';
+import { useIsAdmin } from '@/hooks/useUserRole';
+import { useTeacherSubjects } from '@/hooks/useTeacherSubjects';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
+
+interface ExamSubject {
+  id: string;
+  subject_id: string;
+  max_marks: number;
+  pdf_file_path?: string | null;
+  subjects: {
+    name: string;
+    code: string;
+  };
+}
 
 interface SubjectPdfUploadManagerProps {
-  examSubjectId: string;
-  subjectName: string;
-  currentPdfPath?: string | null;
-  onPdfUploaded?: (pdfPath: string) => void;
+  examName: string;
+  examClass: string;
+  examSubjects: ExamSubject[];
 }
 
 export const SubjectPdfUploadManager = ({
-  examSubjectId,
-  subjectName,
-  currentPdfPath,
-  onPdfUploaded
+  examName,
+  examClass,
+  examSubjects
 }: SubjectPdfUploadManagerProps) => {
-  const [isUploading, setIsUploading] = useState(false);
-  const uploadPdf = useUploadSubjectPdf();
-  const deletePdf = useDeleteSubjectPdf();
+  const isAdmin = useIsAdmin();
+  const { data: teacherSubjects, isLoading: loadingTeacherSubjects } = useTeacherSubjects();
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.type !== 'application/pdf') {
-      toast({
-        title: 'Invalid file',
-        description: 'Please select a PDF file',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setIsUploading(true);
-    uploadPdf.mutate(
-      { examSubjectId, pdfFile: file },
-      {
-        onSuccess: (result) => {
-          setIsUploading(false);
-          if (onPdfUploaded) {
-            onPdfUploaded(result.pdf_file_path);
-          }
-        },
-        onError: () => {
-          setIsUploading(false);
-        }
-      }
+  const canEditSubject = (subjectId: string): boolean => {
+    if (isAdmin) return true;
+    
+    if (!teacherSubjects) return false;
+    
+    return teacherSubjects.some(
+      ts => ts.subject_id === subjectId && ts.classes.includes(examClass)
     );
   };
 
-  const handleDeletePdf = () => {
-    deletePdf.mutate(examSubjectId);
-  };
+  const visibleSubjects = isAdmin 
+    ? examSubjects 
+    : examSubjects.filter(es => canEditSubject(es.subject_id));
+
+  if (loadingTeacherSubjects) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (visibleSubjects.length === 0) {
+    return (
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          {isAdmin 
+            ? 'No subjects added to this exam yet.' 
+            : 'You are not assigned to teach any subjects for this exam.'}
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
-    <Card className="p-4">
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="font-medium text-sm">{subjectName}</Label>
-          {currentPdfPath && (
-            <Badge variant="secondary" className="text-xs">
-              PDF Uploaded
-            </Badge>
-          )}
-        </div>
-
-        {currentPdfPath ? (
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => document.getElementById(`pdf-${examSubjectId}`)?.click()}
-              disabled={uploadPdf.isPending}
-            >
-              <Upload className="w-3 h-3 mr-1" />
-              Replace PDF
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleDeletePdf}
-              disabled={deletePdf.isPending}
-              className="text-destructive hover:text-destructive"
-            >
-              <X className="w-3 h-3" />
-            </Button>
-          </div>
-        ) : (
-          <label
-            htmlFor={`pdf-${examSubjectId}`}
-            className="flex items-center justify-center w-full px-3 py-2 border-2 border-dashed rounded-lg cursor-pointer hover:border-primary transition-colors text-sm"
-          >
-            <Upload className="w-3 h-3 mr-1" />
-            <span>Upload PDF</span>
-          </label>
-        )}
-
-        <input
-          id={`pdf-${examSubjectId}`}
-          type="file"
-          accept="application/pdf"
-          onChange={handleFileChange}
-          className="hidden"
-          disabled={isUploading}
-        />
+    <div className="space-y-4">
+      <CardHeader className="px-0 pt-0">
+        <CardTitle>Subject Exam Papers</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          {isAdmin 
+            ? 'Viewing all subject exam papers. You can upload and manage PDFs for all subjects.' 
+            : 'Upload exam papers for subjects you teach.'}
+        </p>
+      </CardHeader>
+      
+      <div className="grid gap-4">
+        {visibleSubjects.map((examSubject) => (
+          <SubjectPdfManager
+            key={examSubject.id}
+            examSubjectId={examSubject.id}
+            subjectName={`${examSubject.subjects.name} (${examSubject.subjects.code})`}
+            pdfPath={examSubject.pdf_file_path}
+            canEdit={canEditSubject(examSubject.subject_id)}
+          />
+        ))}
       </div>
-    </Card>
+    </div>
   );
 };

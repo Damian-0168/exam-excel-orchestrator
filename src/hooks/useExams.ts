@@ -31,6 +31,14 @@ export interface ExamWithSubjects extends Exam {
   }[];
 }
 
+export interface ExamSubject {
+  id: string;
+  exam_id: string;
+  subject_id: string;
+  max_marks: number;
+  pdf_file_path?: string | null;
+}
+
 export const useExams = () => {
   return useQuery({
     queryKey: ['exams'],
@@ -54,6 +62,7 @@ export const useExams = () => {
             id,
             subject_id,
             max_marks,
+            pdf_file_path,
             subjects (
               name,
               code

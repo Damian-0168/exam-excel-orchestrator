@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Filter, Search, Calendar, BookOpen, Edit, Trash2, Download, Eye, ArrowLeft } from 'lucide-react';
+import { Plus, Filter, Search, Calendar, BookOpen, Edit, Trash2, Download, Eye, ArrowLeft, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import { useExams, useCreateExam, useUpdateExam, useDeleteExam, type ExamWithSub
 import { ExamForm } from './ExamForm';
 import { PdfViewer } from './PdfViewer';
 import { ExamCardPreview } from './ExamCardPreview';
+import { ExamPdfManagement } from './ExamPdfManagement';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -34,6 +35,7 @@ export const StandaloneExams = () => {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [showPdfManager, setShowPdfManager] = useState<string | null>(null);
 
   // Get current user ID
   supabase.auth.getUser().then(({ data: { user } }) => {
@@ -339,6 +341,16 @@ export const StandaloneExams = () => {
                     Edit
                   </Button>
                 )}
+                {canEditExam(exam) && exam.exam_subjects && exam.exam_subjects.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowPdfManager(exam.id)}
+                    title="Manage PDFs"
+                  >
+                    <BookOpen className="w-3 h-3" />
+                  </Button>
+                )}
                 {exam.pdf_file_path && (
                   <>
                     <Button
@@ -428,6 +440,21 @@ export const StandaloneExams = () => {
             document.body.removeChild(a);
           }}
         />
+      )}
+
+      {/* PDF Management Dialog */}
+      {showPdfManager && filteredExams.find(e => e.id === showPdfManager) && (
+        <Dialog open={!!showPdfManager} onOpenChange={(open) => { if (!open) setShowPdfManager(null); }}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Manage Subject Exam Papers</DialogTitle>
+            </DialogHeader>
+            <ExamPdfManagement
+              exam={filteredExams.find(e => e.id === showPdfManager)!}
+              canEdit={canEditExam(filteredExams.find(e => e.id === showPdfManager)!)}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

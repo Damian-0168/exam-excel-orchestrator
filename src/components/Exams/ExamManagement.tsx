@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Filter, Search, Calendar, BookOpen, Edit, Trash2, Download, Eye } from 'lucide-react';
+import { Plus, Filter, Search, Calendar, BookOpen, Edit, Trash2, Download, Eye, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -11,9 +11,11 @@ import { useExams, useCreateExam, useUpdateExam, useDeleteExam, type ExamWithSub
 import { ExamForm } from './ExamForm';
 import { PdfViewer } from './PdfViewer';
 import { ExamCardPreview } from './ExamCardPreview';
+import { SubjectPdfUploadManager } from './SubjectPdfUploadManager';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 export const ExamManagement = () => {
   const { data: exams = [], isLoading } = useExams();
@@ -28,6 +30,7 @@ export const ExamManagement = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [termFilter, setTermFilter] = useState<string>('all');
   const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null);
+  const [managingSubjectPdfs, setManagingSubjectPdfs] = useState<ExamWithSubjects | null>(null);
 
   const handleCreateExam = (data: any) => {
     createExamMutation.mutate(data, {
@@ -325,10 +328,17 @@ export const ExamManagement = () => {
                   variant="outline"
                   size="sm"
                   className="flex-1"
+                  onClick={() => setManagingSubjectPdfs(exam)}
+                >
+                  <FileText className="w-3 h-3 mr-1" />
+                  Manage PDFs
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => openEditDialog(exam)}
                 >
-                  <Edit className="w-3 h-3 mr-1" />
-                  Edit
+                  <Edit className="w-3 h-3" />
                 </Button>
                 {exam.pdf_file_path && (
                   <>
@@ -413,6 +423,25 @@ export const ExamManagement = () => {
           }}
         />
       )}
+
+      {/* Subject PDF Management Dialog */}
+      <Dialog open={!!managingSubjectPdfs} onOpenChange={() => setManagingSubjectPdfs(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Subject Exam Papers - {managingSubjectPdfs?.name}</DialogTitle>
+          </DialogHeader>
+          {managingSubjectPdfs && (
+            <div className="mt-4">
+              <Separator className="mb-6" />
+              <SubjectPdfUploadManager
+                examName={managingSubjectPdfs.name}
+                examClass={managingSubjectPdfs.class}
+                examSubjects={managingSubjectPdfs.exam_subjects || []}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

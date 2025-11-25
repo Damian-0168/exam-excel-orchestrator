@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Filter, Search, Calendar, BookOpen, Edit, Trash2, Download, Eye, ArrowLeft, X } from 'lucide-react';
+import { Plus, Filter, Search, Calendar, BookOpen, Edit, Trash2, Download, Eye, ArrowLeft, X, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -11,10 +11,11 @@ import { useExams, useCreateExam, useUpdateExam, useDeleteExam, type ExamWithSub
 import { ExamForm } from './ExamForm';
 import { PdfViewer } from './PdfViewer';
 import { ExamCardPreview } from './ExamCardPreview';
-import { ExamPdfManagement } from './ExamPdfManagement';
+import { SubjectPdfUploadManager } from './SubjectPdfUploadManager';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 import { useNavigate } from 'react-router-dom';
 import { useIsAdmin } from '@/hooks/useUserRole';
 
@@ -35,7 +36,7 @@ export const StandaloneExams = () => {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [viewingPdf, setViewingPdf] = useState<{ url: string; name: string } | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [showPdfManager, setShowPdfManager] = useState<string | null>(null);
+  const [managingSubjectPdfs, setManagingSubjectPdfs] = useState<ExamWithSubjects | null>(null);
 
   // Get current user ID
   supabase.auth.getUser().then(({ data: { user } }) => {
@@ -331,55 +332,32 @@ export const StandaloneExams = () => {
 
               <div className="flex gap-2">
                 {canEditExam(exam) && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => openEditDialog(exam)}
-                  >
-                    <Edit className="w-3 h-3 mr-1" />
-                    Edit
-                  </Button>
-                )}
-                {canEditExam(exam) && exam.exam_subjects && exam.exam_subjects.length > 0 && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowPdfManager(exam.id)}
-                    title="Manage PDFs"
-                  >
-                    <BookOpen className="w-3 h-3" />
-                  </Button>
-                )}
-                {exam.pdf_file_path && (
                   <>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleViewPdf(exam.pdf_file_path!, exam.name)}
-                      title="View PDF"
+                      className="flex-1"
+                      onClick={() => setManagingSubjectPdfs(exam)}
                     >
-                      <Eye className="w-3 h-3" />
+                      <FileText className="w-3 h-3 mr-1" />
+                      Manage PDFs
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDownloadPdf(exam.pdf_file_path!)}
-                      title="Download PDF"
+                      onClick={() => openEditDialog(exam)}
                     >
-                      <Download className="w-3 h-3" />
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setExamToDelete(exam.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-3 h-3" />
                     </Button>
                   </>
-                )}
-                {canEditExam(exam) && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setExamToDelete(exam.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
                 )}
               </div>
             </Card>
@@ -442,20 +420,24 @@ export const StandaloneExams = () => {
         />
       )}
 
-      {/* PDF Management Dialog */}
-      {showPdfManager && filteredExams.find(e => e.id === showPdfManager) && (
-        <Dialog open={!!showPdfManager} onOpenChange={(open) => { if (!open) setShowPdfManager(null); }}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Manage Subject Exam Papers</DialogTitle>
-            </DialogHeader>
-            <ExamPdfManagement
-              exam={filteredExams.find(e => e.id === showPdfManager)!}
-              canEdit={canEditExam(filteredExams.find(e => e.id === showPdfManager)!)}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
+      {/* Subject PDF Management Dialog */}
+      <Dialog open={!!managingSubjectPdfs} onOpenChange={() => setManagingSubjectPdfs(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Subject Exam Papers - {managingSubjectPdfs?.name}</DialogTitle>
+          </DialogHeader>
+          {managingSubjectPdfs && (
+            <div className="mt-4">
+              <Separator className="mb-6" />
+              <SubjectPdfUploadManager
+                examName={managingSubjectPdfs.name}
+                examClass={managingSubjectPdfs.class}
+                examSubjects={managingSubjectPdfs.exam_subjects || []}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
